@@ -177,6 +177,8 @@ function enterSite(name, opts) {
   state.lastSnapshot = null;
   state.roundUsed = {};
   state.played = 0;
+  lastScorePaint.A = null;
+  lastScorePaint.B = null;
   try { localStorage.setItem(K_USER, clean); } catch (_) {}
   $("login").classList.remove("active");
   $("setup").classList.add("active");
@@ -345,11 +347,34 @@ function renderBoard() {
 
 const HELP_LABEL = { friend: "صديق", two: "جوابين", dbl: "دبل" };
 
+/* نبضة قصيرة على رقم الفريق عند تغيّر النقاط فقط (بلا أي أثر على القوانين) */
+const lastScorePaint = { A: null, B: null };
+function paintScore(L, score) {
+  const el = $("score" + L);
+  if (!el) return;
+  if (el.textContent !== String(score)) el.textContent = score;
+  const prev = lastScorePaint[L];
+  if (prev !== null && prev !== score) {
+    el.classList.remove("bump");
+    void el.offsetWidth;          // إعادة تشغيل الحركة من أولها
+    el.classList.add("bump");
+  }
+  lastScorePaint[L] = score;
+}
+
+/* كبسولة رقم السؤال في الجولة: من 1 إلى 36 */
+function paintTurnQ() {
+  const el = $("turnQ");
+  if (!el) return;
+  const n = Math.min(state.played + 1, PICK * 6);
+  el.textContent = `السؤال ${n} / ${PICK * 6}`;
+}
+
 function renderTeams() {
   ["A", "B"].forEach((L, i) => {
     const t = state.teams[i];
     $("name" + L).textContent = t.name;
-    $("score" + L).textContent = t.score;
+    paintScore(L, t.score);
     $("teamCard" + L).classList.toggle("active", state.turn === i);
     const box = $("helps" + L);
     if (box) {
@@ -374,6 +399,7 @@ function setUndoState() {
 function render() {
   renderBoard();
   renderTeams();
+  paintTurnQ();
   const left = state.picked.reduce((n, id) => n + catLeft(id), 0);
   const el = $("remaining");
   if (el) el.textContent = `${left} سؤالاً متبقياً في بنكك`;
@@ -694,6 +720,8 @@ function startGame() {
   state.played = 0;
   state.roundUsed = {};
   state.lastSnapshot = null;
+  lastScorePaint.A = null;
+  lastScorePaint.B = null;
   $("setup").classList.remove("active");
   $("board").classList.add("active");
   render();

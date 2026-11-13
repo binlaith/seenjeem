@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="styles.css?v=72" />
+<link rel="stylesheet" href="styles.css?v=75" />
 </head>
 <body>
 
@@ -32,6 +32,12 @@
       <p class="login-note">نحفظ أسئلتك باسمك، فلا يعود إليك سؤال أجبت عنه سابقاً.</p>
       <p class="login-err" id="loginErr"></p>
     </div>
+
+    <ul class="login-badges" aria-label="عن اللعبة">
+      <li>20 فئة متنوعة</li>
+      <li>6,000 سؤال متجدد</li>
+      <li>للجمعات والعائلة</li>
+    </ul>
   </div>
 </section>
 
@@ -110,9 +116,10 @@
   </header>
 
   <div class="turn-banner">
-    <span class="tb-label">الدور</span>
+    <span class="tb-label">الدور الآن</span>
     <b class="tb-team" id="turnTeam">—</b>
     <span class="tb-hint">اختر فئة ثم قيمة السؤال</span>
+    <span class="tb-q" id="turnQ">السؤال 1 / 36</span>
   </div>
 
   <div class="board-wrap"><div class="board" id="boardGrid"></div></div>
@@ -191,6 +198,22 @@
 <!-- الفائز -->
 <div class="modal" id="winModal">
   <div class="modal-card narrow center">
+    <svg class="win-trophy" viewBox="0 0 64 64" width="76" height="76" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="cupGold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffe89a" />
+          <stop offset=".55" stop-color="#ffd34d" />
+          <stop offset="1" stop-color="#e0a800" />
+        </linearGradient>
+      </defs>
+      <path d="M21 15h22v8.5C43 31 38 36 32 36S21 31 21 23.5z" fill="url(#cupGold)" stroke="#c68f06" stroke-width="1.8" stroke-linejoin="round" />
+      <path d="M21 17.5h-6.5a7.5 7.5 0 0 0 7.5 7.5M43 17.5h6.5a7.5 7.5 0 0 1-7.5 7.5" fill="none" stroke="#c68f06" stroke-width="1.8" stroke-linecap="round" />
+      <path d="M32 17.6l1.55 3.2 3.55.5-2.6 2.45.65 3.45L32 25.55l-3.15 1.65.65-3.45-2.6-2.45 3.55-.5z" fill="#12324f" opacity=".82" />
+      <rect x="29.4" y="36" width="5.2" height="8.2" fill="url(#cupGold)" stroke="#c68f06" stroke-width="1.8" />
+      <rect x="20.5" y="44.2" width="23" height="5.6" rx="2.8" fill="url(#cupGold)" stroke="#c68f06" stroke-width="1.8" />
+      <path d="M17 51.6h30" fill="none" stroke="#e0a800" stroke-width="2" stroke-linecap="round" />
+      <path d="M52 20l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9zM12.5 30l.7 1.6 1.6.7-1.6.7-.7 1.6-.7-1.6-1.6-.7 1.6-.7z" fill="#ffd34d" stroke="#e0a800" stroke-width=".6" />
+    </svg>
     <div class="win-label">الفائز</div>
     <div class="win-name" id="winName">—</div>
     <div class="win-scores" id="winScores">—</div>
@@ -234,7 +257,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="questions.js?v=72"></script>
-<script src="app.js?v=72"></script>
+<script src="questions.js?v=75"></script>
+<script src="app.js?v=75"></script>
 </body>
 </html>
