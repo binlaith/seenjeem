@@ -40,6 +40,7 @@
   --t-lg: 18px; --t-xl: 24px; --t-2xl: 32px; --t-3xl: 44px;
 
   --r-sm: 8px; --r: 12px; --r-lg: 18px;
+  --board-gap: clamp(14px, 1.6vw, 24px);
   --shadow-sm: 0 1px 2px rgba(18, 50, 79, .06);
   --shadow-lg: 0 2px 4px rgba(18, 50, 79, .06), 0 24px 56px rgba(18, 50, 79, .16);
 }
@@ -502,15 +503,15 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   align-content: stretch;
-  row-gap: var(--s2);
-  column-gap: clamp(16px, 2vw, 28px);
+  row-gap: var(--board-gap);
+  column-gap: var(--board-gap);
 }
 
 /* الرأس صفٌّ ثابت الارتفاع + 6 صفوف تتقاسم الباقي بالضبط ⇒ تصطف الصفوف أفقياً ولا سكرول */
 .col {
   display: grid;
   grid-template-rows: var(--head-h, 54px) repeat(6, minmax(0, 1fr));
-  gap: var(--s2);
+  gap: var(--board-gap);
   min-height: 0; min-width: 0;
   height: 100%;
 }
@@ -597,15 +598,6 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   box-shadow: 0 3px 0 #b3d2ee, 0 4px 10px rgba(18, 50, 79, .05);
   transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
 }
-.cell small {
-  position: absolute;
-  top: 5px; inset-inline-start: 7px;
-  font-size: 10px; font-weight: 400; color: var(--muted);
-  background: var(--blue-50);
-  border-radius: 999px;
-  padding: 0 6px;
-  line-height: 1.6;
-}
 
 /* 200: بلاطة بيضاء مشرقة */
 .cell[data-tier="200"] {
@@ -627,10 +619,6 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   border-color: #123b60;
   box-shadow: 0 3px 0 #0f3150, 0 5px 12px rgba(18, 50, 79, .12);
   color: #ffd34d;
-}
-.cell[data-tier="600"] small {
-  background: rgba(255, 255, 255, .16);
-  color: #ffffff;
 }
 
 /* التحويم: ترتفع البلاطة بإطار ذهبي مشرق وظل دافئ */
@@ -1175,15 +1163,14 @@ input { color: var(--ink); }
   .helps-mini { display: none; }
 
   /* الشبكة: مسافة أفقية مريحة بين الأعمدة */
-  .board { column-gap: 7px; row-gap: 5px; }
-  .col { gap: 5px; }
+  .board { column-gap: var(--board-gap); row-gap: var(--board-gap); }
+  .col { gap: var(--board-gap); }
   .col-head { padding: 0; }
   .col-head b { font-size: clamp(9.5px, 3vw, 11px); font-weight: 700; line-height: 1.15; }
   .col-head small { display: none; }
   .col-head .dots { margin-top: 3px; gap: 2px; }
   .col-head .dots i { width: 4px; height: 4px; }
   .cell { font-size: clamp(15px, 4.3vw, 17px); border-radius: var(--r-sm); }
-  .cell small { font-size: 8px; padding: 0 4px; top: 2px; inset-inline-start: 3px; }
   .cell.used { padding: 2px 3px; gap: 1px; }
   .cell-who { font-size: 9px; }
   .cell-val { font-size: 12px; }
@@ -1246,8 +1233,8 @@ input { color: var(--ink); }
   .help-dot { font-size: 7.5px; line-height: 1.5; padding: 0 3px; }
 
   /* الشبكة: فاصل أفقي واضح بين الفئات */
-  .board { column-gap: 10px; row-gap: 4px; }
-  .col { gap: 4px; }
+  .board { column-gap: var(--board-gap); row-gap: var(--board-gap); }
+  .col { gap: var(--board-gap); }
   .col-head { padding: 0; }
   .col-head b { font-size: 10px; line-height: 1.1; }
   .col-head small { display: none; }
@@ -1257,7 +1244,6 @@ input { color: var(--ink); }
   .cell[data-tier="200"] { box-shadow: 0 2px 0 #b3d2ee; }
   .cell[data-tier="400"] { box-shadow: 0 2px 0 #7fb1de; }
   .cell[data-tier="600"] { box-shadow: 0 2px 0 #0f3150; }
-  .cell small { font-size: 8px; padding: 0 3px; top: 2px; inset-inline-start: 4px; }
   /* الخلية المجابة: سطران واضحان بلا قصّ في ارتفاع 390 */
   .cell.used { padding: 1px 3px; gap: 1px; border-radius: 6px; }
   .cell-who { font-size: 8.5px; line-height: 1.1; }
@@ -1335,3 +1321,7 @@ input { color: var(--ink); }
   .se-input { height: 62px; font-size: 30px; }
   .se-hint { margin: var(--s2) 0 var(--s3); }
 }
+
+/* مسافة اللوحة: واحدة أفقياً ورأسياً */
+@media (max-width: 760px) { :root { --board-gap: 10px; } }
+@media (max-height: 700px) and (orientation: landscape) { :root { --board-gap: 8px; } }

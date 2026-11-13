@@ -365,7 +365,7 @@ function renderBoard() {
           : `سؤال ${tier} نقطة — لم يجبه أحد`);
       } else {
         b.className = "cell" + (drained ? " drained" : "");
-        b.innerHTML = `${tier}<small>${bankLeft}</small>`;
+        b.innerHTML = `${tier}`;
         b.setAttribute("aria-label", `سؤال ${tier} نقطة، متبقي ${bankLeft} في هذا المستوى`);
         if (drained) b.title = "لا توجد أسئلة متبقية في هذا المستوى لهذا اللاعب";
         else b.addEventListener("click", () => openQuestion(id, slot));
