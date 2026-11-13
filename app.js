@@ -559,7 +559,7 @@ function award(teamIndex) {
     pts = q.d * (t.dbl ? 2 : 1);
     t.score += pts;
     sfx.ok();
-    msg = `+${pts} لـ${t.name}`;
+    msg = `+${pts} إلى ${t.name}`;
   } else { pts = 0; sfx.no(); }
 
   // يُحفظ السؤال لاسم اللاعب: لا يعود إليه أبداً
