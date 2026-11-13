@@ -18,6 +18,19 @@
   --muted: #4e6e8c;
   --line: #cfe4f6;
 
+  /* هوية كل فريق: أزرق ملكي للفريق الأول · كهرماني مرجاني للثاني (تباين واضح لعمى الألوان) */
+  --team-a: #1967b2;
+  --team-a-bg: #e5f1fd;
+  --team-a-bd: #6cb0f0;
+  --team-a-ink: #0f447a;
+  --team-a-rgb: 25, 103, 178;
+
+  --team-b: #d4621a;
+  --team-b-bg: #fff0e5;
+  --team-b-bd: #f2a36f;
+  --team-b-ink: #8a3906;
+  --team-b-rgb: 212, 98, 26;
+
   /* مسافات 4 → 64 */
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px;
   --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px;
@@ -101,17 +114,6 @@ button { font-family: inherit; cursor: pointer; color: inherit; }
 }
 .icon svg { width: 18px; height: 18px; }
 .icon:hover { color: var(--blue-700); border-color: var(--blue-300); }
-
-.end-btn {
-  background: var(--white);
-  border: 1px solid var(--line);
-  color: var(--muted);
-  border-radius: 10px;
-  height: 40px;
-  padding: 0 var(--s3);
-  font-size: var(--t-sm);
-}
-.end-btn:hover { color: var(--blue-700); border-color: var(--blue-300); }
 
 /* ---------- البداية ---------- */
 #setup {
@@ -356,14 +358,18 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   padding: var(--s4) var(--s5) var(--s2);
   gap: var(--s3);
   min-height: 0; min-width: 0;
-  --head-h: 54px;
+  --head-h: 72px;
 }
 /* display لا يُضبط في القاعدة العامة، وإلا ظهرت الشاشة وهي .screen غير مفعّلة */
 #board.screen.active { display: flex; flex-direction: column; }
 
+/* ---------- الشريط العلوي: فريق في كل زاوية · المنزل والشعار في المنتصف ---------- */
 .bar {
-  display: flex; align-items: center; justify-content: space-between; gap: var(--s4);
-  background: rgba(255, 255, 255, .88);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, .9);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid #cfe4f6;
@@ -373,72 +379,119 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   min-width: 0;
   flex: 0 0 auto;
 }
+
+/* المنتصف: زر المنزل + شعار اللعبة فقط */
+.bar-center {
+  display: flex; align-items: center; gap: 8px;
+  justify-self: center;
+  min-width: 0;
+}
+.home-btn {
+  flex: 0 0 auto;
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  background: linear-gradient(180deg, #ffffff 0%, #eef6fe 100%);
+  border: 1.5px solid var(--blue-300);
+  border-radius: 11px;
+  color: var(--blue-700);
+  box-shadow: 0 2px 0 #cfe4f6;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, color .12s ease;
+}
+.home-btn svg { width: 19px; height: 19px; display: block; }
+.home-btn:hover {
+  color: var(--ink); border-color: #e8c14a;
+  box-shadow: 0 3px 0 #e8c14a, 0 6px 12px rgba(224, 168, 0, .2);
+  transform: translateY(-1px);
+}
+.home-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #e8c14a; }
+.home-btn:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+
 .bar-brand {
   display: flex; align-items: center; gap: 6px;
   font-weight: 700; font-size: var(--t-xs);
-  letter-spacing: .04em; color: var(--muted);
+  letter-spacing: .02em; color: var(--muted);
   white-space: nowrap; min-width: 0;
 }
 .bar-logo { width: 22px; height: 22px; flex: 0 0 auto; border-radius: 6px; display: block; }
 
-.scoreline { display: flex; align-items: center; gap: var(--s5); min-width: 0; }
-.team { display: flex; align-items: baseline; gap: var(--s2); }
-.tname { font-size: var(--t-sm); color: var(--muted); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* ---------- بطاقة كل فريق: لون هوية + شريط لوني + نقاط بارزة ---------- */
+.team {
+  position: relative;
+  display: grid; grid-template-columns: auto auto;
+  column-gap: var(--s2); align-items: center;
+  border-radius: 12px;
+  padding: 4px 12px;
+  border: 1.5px solid transparent;
+  min-width: 0; max-width: 100%;
+  transition: background .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+/* شريط لون الفريق: يُعرّف هويته من أول نظرة */
+.team::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 4px;
+  top: 5px; bottom: 5px;
+  width: 4px; border-radius: 3px;
+  background: var(--team-a);
+  opacity: .92;
+}
+
+#teamCardA {
+  --glow-rgb: var(--team-a-rgb);
+  justify-self: start;
+  background: var(--team-a-bg);
+  border-color: var(--team-a-bd);
+  color: var(--team-a-ink);
+}
+#teamCardB {
+  --glow-rgb: var(--team-b-rgb);
+  justify-self: end;
+  background: var(--team-b-bg);
+  border-color: var(--team-b-bd);
+  color: var(--team-b-ink);
+}
+#teamCardB::before { background: var(--team-b); }
+
+.team .tname, .team .tscore { color: inherit; align-self: baseline; }
+.tname { font-size: var(--t-sm); max-width: 150px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tscore {
   appearance: none; background: none; border: 0; margin: 0; padding: 0 2px;
   font: inherit; font-size: var(--t-xl); font-weight: 700; font-variant-numeric: tabular-nums;
   color: inherit; line-height: inherit; border-radius: 6px; cursor: pointer;
   text-decoration: underline dotted transparent; text-underline-offset: 4px;
 }
-.tscore:hover { background: var(--blue-50); text-decoration-color: var(--blue-300); }
-.tscore:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
-.team.active .tname { color: var(--ink); }
-.team.active .tscore { color: var(--blue-700); }
-.sep { width: 1px; height: 18px; background: var(--line); }
+.team .tscore:hover { background: rgba(255, 255, 255, .65); text-decoration-color: rgba(var(--glow-rgb), .55); }
+.team .tscore:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
 
-.bar-right { display: flex; align-items: center; gap: var(--s2); }
-
-/* العنصر الأبرز: الدور — تدرّج ذهبي حيوي بأسلوب الاستوديو */
-.turn-banner {
-  display: flex; align-items: center; gap: var(--s3);
-  background: linear-gradient(135deg, #ffe270 0%, #ffd242 55%, #f5bd1e 100%);
-  border: 1.5px solid #e3ad12;
-  border-radius: 14px;
-  padding: 8px 18px;
-  box-shadow: 0 3px 0 #d49e08, 0 8px 20px rgba(245, 189, 30, .22);
-  flex: 0 0 auto;
-  min-width: 0;
+/* صاحب الدور: مربع متوهج واضح + إطار سميك مضيء + نبضة هادئة */
+.team.active {
+  border-width: 2.5px;
+  animation: activeGlow 2.4s ease-in-out infinite;
 }
-.tb-label {
-  flex: 0 0 auto;
-  font-size: 10px; letter-spacing: .08em; font-weight: 700; color: #6b4d04;
-  background: rgba(255, 255, 255, .6);
-  border: 1px solid rgba(224, 168, 0, .45);
-  border-radius: 999px;
-  padding: 2px 10px;
-  white-space: nowrap;
+@keyframes activeGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px rgba(var(--glow-rgb), .28),
+      0 0 12px 2px rgba(var(--glow-rgb), .34),
+      0 0 20px 5px rgba(255, 211, 77, .30);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3.5px rgba(var(--glow-rgb), .55),
+      0 0 20px 6px rgba(var(--glow-rgb), .56),
+      0 0 32px 11px rgba(255, 211, 77, .60);
+  }
 }
-.tb-team {
-  flex: 0 1 auto;
-  font-size: 26px; font-weight: 900; line-height: 1.15; color: var(--ink);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.tb-hint {
-  flex: 1 1 auto; min-width: 0;
-  font-size: var(--t-sm); color: #7a5a06;
-  text-align: center;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.tb-q {
-  flex: 0 0 auto;
-  margin-inline-start: auto;
-  font-size: 11px; font-weight: 700; color: var(--ink);
-  background: rgba(255, 255, 255, .72);
-  border: 1px solid rgba(224, 168, 0, .55);
-  border-radius: 999px;
-  padding: 3px 10px;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
+/* نقطة ذهبية صغيرة: الدور الآن */
+.team.active::after {
+  content: "";
+  position: absolute;
+  top: -4px; inset-inline-end: -4px;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #ffd34d;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(224, 168, 0, .55);
 }
 
 .board-wrap { flex: 1 1 0; min-height: 0; min-width: 0; overflow: hidden; display: flex; padding-top: 0; }
@@ -449,7 +502,8 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   align-content: stretch;
-  gap: var(--s2);
+  row-gap: var(--s2);
+  column-gap: clamp(16px, 2vw, 28px);
 }
 
 /* الرأس صفٌّ ثابت الارتفاع + 6 صفوف تتقاسم الباقي بالضبط ⇒ تصطف الصفوف أفقياً ولا سكرول */
@@ -461,31 +515,71 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   height: 100%;
 }
 
-/* لوحة فئة كحلية بارزة كأنها شاشة برنامج مسابقات */
+/* رأس العمود: صورة الفئة كخلفية + طبقة تعتيم واحدة متدرّجة + نص أبيض بهالة تباين.
+   الاسم مقروء 100% في كل الحالات لأن الظلام يزداد مع اتجاه انحدار النص. */
 .col-head {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1.5px solid #163d63;
+  box-shadow: 0 3px 0 #0e2944, 0 4px 10px rgba(18, 50, 79, .10);
+  padding: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  overflow: hidden;
   text-align: center;
   line-height: 1.15;
-  padding: 4px 2px;
   min-width: 0;
-  background: linear-gradient(180deg, #1f5f96 0%, #12324f 100%);
+  background: #12324f;
   color: #ffffff;
-  border: 1px solid #0e2840;
-  border-radius: var(--r-sm);
-  box-shadow: 0 2px 0 #0d243a;
 }
-.col-head b { font-size: var(--t-sm); font-weight: 700; line-height: 1.15; color: #ffffff; overflow-wrap: break-word; }
-.col-head small { display: block; color: #cfe4f6; font-size: var(--t-xs); margin-top: 1px; }
+/* ── الطبقة 1: رسمة الفئة كاملة العرض ── */
+.col-head-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center 28%;
+  z-index: 0;
+  pointer-events: none;
+  transition: transform .2s ease;
+}
+/* ── الطبقة 2: تدرّج مزدوج (شفاف أعلى ⇒ كحلي غني أسفل) ── */
+.col-head::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg,
+    rgba(14, 38, 64, 0.24) 0%,
+    rgba(14, 38, 64, 0.58) 45%,
+    rgba(11, 31, 53, 0.90) 100%);
+}
+/* ── الطبقة 3: النص الأبيض فوق الظلام ── */
+.col-head-fg {
+  position: relative;
+  z-index: 2;
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-end;
+  padding: 5px 4px 5px;
+}
+.col-head b {
+  color: #ffffff;
+  font-weight: 800;
+  line-height: 1.18;
+  font-size: var(--t-sm);
+  text-shadow: 0 1px 3px rgba(6, 18, 32, 0.96), 0 0 10px rgba(6, 18, 32, 0.72);
+  overflow-wrap: break-word;
+}
+.col-head small { display: block; color: #dcebfb; font-size: var(--t-xs); margin-top: 1px; text-shadow: 0 1px 2px rgba(6, 18, 32, 0.9); }
 .col.done .col-head {
-  background: linear-gradient(180deg, #4a7ba6 0%, #2b567c 100%);
   border-color: #22496b;
-  box-shadow: 0 2px 0 #1b3c58;
-  opacity: .74;
+  opacity: .88;
 }
-.col.done .col-head b { color: #eef6fe; }
-.col.done .col-head small { color: #cfe4f6; }
+.col.done .col-head-bg { filter: grayscale(.8); opacity: .45; }
+.col.done .col-head b { color: #ffffff; }
+.col.done .col-head small { color: #dcebfb; }
 
 /* ---------- بلاطات لعب مجسّمة (Tactile Game Tiles) ----------
    العمق من الحافة السفلية الصلبة + ظل ناعم: لا يغيّر أبعاد شبكة CSS، فلا سكرول. */
@@ -558,17 +652,62 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   box-shadow: 0 1px 0 #cbb26f, 0 2px 6px rgba(18, 50, 79, .14);
 }
 
-/* الخلية الملعوبة: غائرة في اللوحة بهدوء */
+/* ---------- الخلية بعد الحكم: اسم الفريق المجيب + قيمة السؤال ---------- */
 .cell.used {
-  background: rgba(18, 50, 79, .05);
-  border: 1px dashed #b8d3ec;
-  box-shadow: inset 0 2px 4px rgba(18, 50, 79, .06);
-  color: transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 4px;
+  overflow: hidden;
+  text-align: center;
+  cursor: default;
   pointer-events: none;
+  border-radius: var(--r-sm);
+  background: #eef1f5;
+  border: 1px solid #d5dce4;
+  color: #8c96a4;
+  box-shadow: none;
 }
-.cell.used small { background: transparent; color: transparent; }
-
-.foot { display: flex; justify-content: space-between; font-size: var(--t-xs); color: var(--muted); padding-top: var(--s2); flex: 0 0 auto; }
+/* الفريق الأول: أزرق ملكي */
+.cell.used.won-a {
+  background: linear-gradient(180deg, #e6f2fe 0%, #d2e8fc 100%);
+  border: 1.5px solid #5ca4e6;
+  color: #0f447a;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .85), 0 2px 5px rgba(25, 103, 178, .14);
+}
+/* الفريق الثاني: كهرماني مرجاني */
+.cell.used.won-b {
+  background: linear-gradient(180deg, #fff1e6 0%, #fde0ca 100%);
+  border: 1.5px solid #eb945b;
+  color: #8a3906;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .85), 0 2px 5px rgba(212, 98, 26, .14);
+}
+/* لم يجبه أحد: رمادي خافت هادئ */
+.cell.used.won-none {
+  background: #eef1f5;
+  border: 1px solid #d5dce4;
+  color: #8c96a4;
+  box-shadow: none;
+  opacity: .82;
+}
+.cell-who {
+  font-size: clamp(9px, 1.1vw, 13px);
+  font-weight: 700;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.15;
+}
+.cell-val {
+  font-size: clamp(12px, 1.6vw, 20px);
+  font-weight: 900;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.cell.used.won-none .cell-val { color: #8c96a4; opacity: .95; }
 
 /* ---------- النافذة ---------- */
 .modal {
@@ -587,6 +726,7 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   .modal.open, .modal.open .modal-card, .bar-time i.low,
   .tscore.bump, #winModal.open .win-trophy { animation: none !important; }
   .cell, .cat-card, .btn { transition: none; }
+  .team.active { animation: none !important; }
 }
 
 .modal-card {
@@ -685,6 +825,24 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   font-weight: 700;
 }
 .btn-team:hover { border-color: var(--blue-500); background: var(--blue-50); }
+
+/* أزرار الحكم بلون كل فريق لتكتمل التجربة البصرية */
+#judgeA {
+  background: var(--team-a-bg);
+  border: 1.5px solid var(--team-a-bd);
+  color: var(--team-a-ink);
+}
+#judgeA:hover { border-color: var(--team-a); background: #dbeafa; }
+#judgeA small { color: var(--team-a); }
+#judgeA b { color: var(--team-a-ink); }
+#judgeB {
+  background: var(--team-b-bg);
+  border: 1.5px solid var(--team-b-bd);
+  color: var(--team-b-ink);
+}
+#judgeB:hover { border-color: var(--team-b); background: #ffe6d3; }
+#judgeB small { color: var(--team-b); }
+#judgeB b { color: var(--team-b-ink); }
 
 .helps {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s2);
@@ -823,15 +981,7 @@ input { color: var(--ink); }
 .col-head .dots i.off { background: rgba(255, 255, 255, .22); opacity: 1; }
 .col.done .col-head .dots i { background: rgba(255, 255, 255, .28); }
 
-/* --- الخلية الملعوبة / المنتهية --- */
-.cell.used { cursor: default; }
-.cell.used::after {
-  content: "";
-  position: absolute;
-  width: 16px; height: 2px;
-  border-radius: 2px;
-  background: var(--blue-300);
-}
+/* --- الخلية المنتهية (لا أسئلة متبقية في مستواها) --- */
 .cell.drained {
   opacity: .5; border-style: dashed;
   background: rgba(232, 242, 252, .7);
@@ -839,34 +989,7 @@ input { color: var(--ink); }
 }
 .cell.drained:hover { border-color: #cfe4f6; background: rgba(232, 242, 252, .7); transform: none; box-shadow: none; }
 
-/* --- شارات وسائل الفريقين في شريط النقاط --- */
-.scoreline { gap: var(--s4); }
-/* بطاقة نتيجة أنيقة لكل فريق */
-.team {
-  position: relative;
-  display: grid; grid-template-columns: auto auto; column-gap: var(--s2); align-items: baseline;
-  background: #f6faff;
-  border: 1.5px solid #cfe4f6;
-  border-radius: 10px;
-  padding: 4px 12px;
-  transition: background .18s ease, border-color .18s ease, box-shadow .18s ease;
-}
-/* دور الفريق: إطار ذهبي وخلفية دافئة ونقطة دور */
-.team.active {
-  background: linear-gradient(180deg, #fffef8, #fff5cf);
-  border-color: #f0be2b;
-  box-shadow: 0 0 0 2px rgba(255, 211, 77, .32), 0 3px 10px rgba(245, 189, 30, .18);
-}
-.team.active::after {
-  content: "";
-  position: absolute;
-  top: -3px; inset-inline-end: -3px;
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: #ffd34d;
-  border: 1px solid #e0a800;
-  box-shadow: 0 1px 3px rgba(224, 168, 0, .5);
-}
+/* --- شارات الوسائل داخل بطاقة كل فريق --- */
 /* نبضة لطيفة للرقم عند تغيّر النتيجة */
 @keyframes scorePop {
   0% { transform: scale(1); }
@@ -887,6 +1010,9 @@ input { color: var(--ink); }
   white-space: nowrap;
 }
 .help-dot.spent { background: transparent; border-color: transparent; color: var(--muted); opacity: .4; text-decoration: line-through; }
+#teamCardA .help-dot { background: rgba(var(--team-a-rgb), .12); border-color: var(--team-a-bd); color: var(--team-a-ink); }
+#teamCardB .help-dot { background: rgba(var(--team-b-rgb), .12); border-color: var(--team-b-bd); color: var(--team-b-ink); }
+#teamCardA .help-dot.spent, #teamCardB .help-dot.spent { background: transparent; border-color: transparent; color: var(--muted); }
 
 /* --- أيقونات --- */
 .icon { transition: color .12s, border-color .12s, opacity .12s; }
@@ -985,65 +1111,51 @@ input { color: var(--ink); }
   .board { max-height: 760px; }
 }
 
-/* نوافذ عريضة لكن قصيرة (تابلت/لابتوب صغير مثل 900×600): شريط دور وشبكة مضغوطان */
+/* نوافذ عريضة لكن قصيرة (تابلت/لابتوب صغير مثل 900×600): شريط وشبكة مضغوطان */
 @media (orientation: landscape) and (min-height: 541px) and (max-height: 700px) {
   #board { --head-h: 46px; padding: 10px 16px 6px; gap: 8px; }
   .bar { padding-bottom: 8px; }
-  .turn-banner { padding: 6px 14px; }
-  .tb-team { font-size: 22px; }
-  .tb-hint { display: none; }
-  .foot { font-size: 10px; padding-top: 2px; }
+  .home-btn { width: 34px; height: 34px; }
 }
 
 /* ---------- الجوال بالطول ---------- */
 @media (max-width: 760px) {
   #board {
-    --head-h: 44px;
+    --head-h: 56px;
     padding: 8px 8px 6px;
     gap: 6px;
   }
 
-  /* الشريط العلوي: سطر واحد أنيق */
-  .bar { flex-wrap: nowrap; gap: 6px; padding: 4px 8px; border-radius: 11px; }
-  /* الشعار المصغّر يبقى في الشريط بلا زيادة ارتفاع ولا سكرول */
-  .bar-brand { display: flex; gap: 5px; font-size: 10px; letter-spacing: 0; }
-  .bar-brand span { max-width: 78px; overflow: hidden; text-overflow: ellipsis; }
-  .bar-right { gap: 4px; flex: 0 0 auto; }
-  .icon { width: 32px; height: 32px; border-radius: 9px; }
-  .icon svg { width: 15px; height: 15px; }
-  .end-btn { height: 32px; font-size: 12px; padding: 0 8px; }
-  .scoreline { order: 0; width: auto; flex: 1 1 auto; justify-content: flex-start; gap: 8px; min-width: 0; }
-  .team { column-gap: 4px; padding: 1px 7px; border-width: 1px; border-radius: 8px; }
-  .team.active::after { top: -2px; inset-inline-end: -2px; width: 6px; height: 6px; }
-  .tname { max-width: 60px; font-size: 11px; }
-  .tscore { font-size: 17px; }
+  /* الشريط العلوي: ثلاث مناطق ثابتة — فريق يمين، فريق يسار، منزل+شعار بالمنتصف */
+  .bar { grid-template-columns: 1fr auto 1fr; gap: 4px; padding: 4px 6px; border-radius: 11px; }
+  .bar-center { gap: 5px; }
+  .home-btn { width: 30px; height: 30px; border-radius: 9px; }
+  .home-btn svg { width: 16px; height: 16px; }
+  .bar-brand { gap: 4px; font-size: 9.5px; letter-spacing: 0; }
+  .bar-brand span { max-width: 74px; overflow: hidden; text-overflow: ellipsis; }
+  .bar-logo { width: 18px; height: 18px; }
+
+  .team { column-gap: 4px; padding: 2px 8px; border-width: 1px; border-radius: 8px; max-width: 100%; }
+  .team.active { border-width: 2px; }
+  .team.active::after { top: -3px; inset-inline-end: -3px; width: 7px; height: 7px; }
+  .team::before { top: 4px; bottom: 4px; width: 3px; }
+  .tname { max-width: 58px; font-size: 10.5px; min-width: 0; }
+  .tscore { font-size: 16px; }
   .helps-mini { display: none; }
 
-  /* شريط الدور: سطر أفقي واحد بدل ثلاثة أسطر ضخمة */
-  .turn-banner {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 6px;
-    padding: 4px 10px;
-    border-width: 1px;
-    border-radius: var(--r-sm);
-    box-shadow: 0 2px 0 #d49e08, 0 4px 12px rgba(245, 189, 30, .2);
-  }
-  .tb-label { display: inline; font-size: 9.5px; padding: 1px 7px; letter-spacing: .03em; }
-  .tb-team { display: inline; font-size: 17px; line-height: 1.1; }
-  .tb-hint { display: none; }
-  .tb-q { display: inline-flex; margin-inline-start: auto; font-size: 10px; padding: 2px 8px; }
-
-  /* الشبكة */
-  .board { gap: 5px; }
+  /* الشبكة: مسافة أفقية مريحة بين الأعمدة */
+  .board { column-gap: 7px; row-gap: 5px; }
   .col { gap: 5px; }
-  .col-head { padding: 3px 2px; }
+  .col-head { padding: 0; }
   .col-head b { font-size: clamp(9.5px, 3vw, 11px); font-weight: 700; line-height: 1.15; }
   .col-head small { display: none; }
   .col-head .dots { margin-top: 3px; gap: 2px; }
   .col-head .dots i { width: 4px; height: 4px; }
   .cell { font-size: clamp(15px, 4.3vw, 17px); border-radius: var(--r-sm); }
   .cell small { font-size: 8px; padding: 0 4px; top: 2px; inset-inline-start: 3px; }
-  .foot { font-size: 10px; padding-top: 2px; }
+  .cell.used { padding: 2px 3px; gap: 1px; }
+  .cell-who { font-size: 9px; }
+  .cell-val { font-size: 12px; }
 
   /* نافذة السؤال بالطول: مضغوطة حتى لا يحتاج اللاعب سكرولاً داخلها */
   #qModal .modal-card { padding: var(--s3) var(--s4); max-height: 94dvh; }
@@ -1061,53 +1173,45 @@ input { color: var(--ink); }
   #qModal .btn-team { padding: 10px 6px; }
 }
 
-/* هواتف ضيقة جداً (≤430px): أيقونة الشعار وحدها تكفي في الشريط */
+/* هواتف ضيقة جداً (≤430px): الشعار يبقى مقروءاً بجانب المنزل بين الفريقين */
 @media (max-width: 430px) {
-  .bar-brand span { display: none; }
+  .bar-brand { font-size: 9px; gap: 3px; }
+  .bar-brand span { max-width: 66px; }
+  .bar-logo { width: 16px; height: 16px; }
+  .home-btn { width: 28px; height: 28px; border-radius: 8px; }
+  .home-btn svg { width: 15px; height: 15px; }
 }
 
 /* ---------- الجوال بالعرض (الارتفاع ثمين جداً) ---------- */
 @media (max-height: 540px) and (orientation: landscape) {
   #board {
-    --head-h: 34px;
+    --head-h: 38px;
     padding: 4px 10px;
     gap: 4px;
   }
 
-  /* الشريط العلوي: سطر واحد مضغوط جداً */
-  .bar { flex-wrap: nowrap; gap: 8px; padding: 3px 8px; border-radius: 10px; }
-  .bar-brand { display: flex; gap: 5px; font-size: 10px; letter-spacing: 0; }
+  /* الشريط العلوي: ثلاث مناطق بلا التفاف ولا سطر ثالث */
+  .bar { grid-template-columns: 1fr auto 1fr; gap: 6px; padding: 3px 8px; border-radius: 10px; }
+  .bar-center { gap: 6px; }
+  .home-btn { width: 28px; height: 28px; border-radius: 8px; }
+  .home-btn svg { width: 15px; height: 15px; }
+  .bar-brand { gap: 4px; font-size: 10px; letter-spacing: 0; }
   .bar-brand span { max-width: 84px; overflow: hidden; text-overflow: ellipsis; }
-  .bar-right { gap: 4px; flex: 0 0 auto; }
-  .icon { width: 28px; height: 28px; border-radius: 8px; }
-  .icon svg { width: 14px; height: 14px; }
-  .end-btn { height: 28px; font-size: 11px; padding: 0 8px; }
-  .scoreline { gap: 10px; flex: 0 1 auto; min-width: 0; }
-  .team { column-gap: 4px; padding: 0 7px; border-width: 1px; border-radius: 7px; }
-  .team.active::after { top: -2px; inset-inline-end: -2px; width: 5px; height: 5px; }
-  .tname { max-width: 110px; font-size: 12px; }
-  .tscore { font-size: 18px; }
-  .helps-mini { display: none; }
+  .bar-logo { width: 18px; height: 18px; }
 
-  /* شريط الدور: شريط أفقي رفيع بسطر واحد */
-  .turn-banner {
-    display: flex; align-items: center; gap: 6px;
-    padding: 2px 10px;
-    border-width: 1px;
-    border-radius: var(--r-sm);
-    box-shadow: 0 2px 0 #d49e08;
-  }
-  .tb-label { display: inline; font-size: 9px; padding: 1px 6px; letter-spacing: .02em; }
-  .tb-team { display: inline; font-size: 15px; line-height: 1.15; }
-  .tb-hint { display: none; }
-  .tb-q { display: inline-flex; margin-inline-start: auto; font-size: 9.5px; padding: 1px 7px; }
+  .team { column-gap: 4px; padding: 0 8px; border-width: 1px; border-radius: 7px; max-width: 100%; }
+  .team.active { border-width: 2px; }
+  .team.active::after { top: -3px; inset-inline-end: -3px; width: 6px; height: 6px; }
+  .team::before { top: 3px; bottom: 3px; width: 3px; }
+  .tname { max-width: 110px; font-size: 12px; min-width: 0; }
+  .tscore { font-size: 17px; }
+  .helps-mini { display: flex; gap: 3px; margin-top: 1px; }
+  .help-dot { font-size: 7.5px; line-height: 1.5; padding: 0 3px; }
 
-  .foot { display: none; }
-
-  /* الشبكة */
-  .board { gap: 4px; }
+  /* الشبكة: فاصل أفقي واضح بين الفئات */
+  .board { column-gap: 10px; row-gap: 4px; }
   .col { gap: 4px; }
-  .col-head { padding: 2px; }
+  .col-head { padding: 0; }
   .col-head b { font-size: 10px; line-height: 1.1; }
   .col-head small { display: none; }
   .col-head .dots { margin-top: 2px; gap: 2px; }
@@ -1117,6 +1221,10 @@ input { color: var(--ink); }
   .cell[data-tier="400"] { box-shadow: 0 2px 0 #7fb1de; }
   .cell[data-tier="600"] { box-shadow: 0 2px 0 #0f3150; }
   .cell small { font-size: 8px; padding: 0 3px; top: 2px; inset-inline-start: 4px; }
+  /* الخلية المجابة: سطران واضحان بلا قصّ في ارتفاع 390 */
+  .cell.used { padding: 1px 3px; gap: 1px; border-radius: 6px; }
+  .cell-who { font-size: 8.5px; line-height: 1.1; }
+  .cell-val { font-size: 11px; line-height: 1.05; }
 
   /* نافذة السؤال مضغوطة رأسياً ليظهر السؤال والأزرار */
   .modal { padding: 6px; }

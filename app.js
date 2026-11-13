@@ -19,7 +19,7 @@ const state = {
   ],
   turn: 0,
   played: 0,
-  roundUsed: {},     // { "catId:slot": true } — خلايا لعبت في هذه الجولة
+  roundUsed: {},     // { "catId:slot": { winner: 0|1|null, value, points } } — خلايا الجولة
   active: null,      // { catId, slot, idx, q, tier, helps: [] }
   lastSnapshot: null,
   phase: 0,
@@ -31,6 +31,7 @@ const state = {
 };
 
 const $ = (id) => document.getElementById(id);
+const on = (id, ev, fn) => { const el = $(id); if (el) el.addEventListener(ev, fn); };
 const catById = (id) => CATEGORIES.find((c) => c.id === id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -94,6 +95,24 @@ function clearRound(user) {
   if (!name) return;
   try { localStorage.removeItem(K_ROUND + name); } catch (_) {}
 }
+
+/* ---------- نتيجة الخلية في الجولة ---------- */
+/* كل خلية ملعوبة تحمل { winner: 0 | 1 | null, value, points } — والقيمة القديمة true تعني «لم يجب أحد» */
+const tierFromKey = (key) => TIERS[Number(String(key).split(":")[1])] || 0;
+
+function normResult(v, key) {
+  if (!v) return null;
+  if (v === true) return { winner: null, value: tierFromKey(key), points: 0 };
+  if (typeof v === "object") {
+    const w = (v.winner === 0 || v.winner === 1) ? v.winner : null;
+    const value = Number(v.value) || tierFromKey(key);
+    const points = Number(v.points) || 0;
+    return { winner: w, value, points };
+  }
+  return null;
+}
+
+function roundResult(key) { return normResult(state.roundUsed[key], key); }
 
 function normTeam(t, i) {
   const fallback = i === 0 ? "فريق سين" : "فريق جيم";
@@ -204,7 +223,10 @@ function tryResume() {
   state.played = Math.max(0, Math.floor(r.played));
   const ru = {};
   if (r.roundUsed && typeof r.roundUsed === "object") {
-    Object.keys(r.roundUsed).forEach((k) => { if (r.roundUsed[k]) ru[k] = true; });
+    Object.keys(r.roundUsed).forEach((k) => {
+      const res = normResult(r.roundUsed[k], k);
+      if (res) ru[k] = res;
+    });
   }
   state.roundUsed = ru;
   state.lastSnapshot = null;
@@ -297,9 +319,11 @@ function renderBoard() {
     head.title = `${cat.name} · ${left === 0 ? "انتهت أسئلتها" : `متبقي ${left} سؤالاً في البنك`}`;
     const dots = TIERS.map((t, slot) =>
       `<i class="${isRoundPlayed(id, slot) ? "off" : ""}"></i>`).join("");
-    head.innerHTML = `<b>${esc(cat.name)}</b>`
+    /* صورة الفئة خلفيةً لرأس العمود + طبقة نص/نقاط فوقها (النص يبقى داخل .col-head للتحديد والاختبار) */
+    head.innerHTML = `<img class="col-head-bg" src="assets/cats/${id}.svg" alt="" aria-hidden="true" />`
+      + `<div class="col-head-fg"><b>${esc(cat.name)}</b>`
       + `<small>${left === 0 ? "انتهت" : `متبقي ${left}`}</small>`
-      + `<span class="dots" aria-hidden="true">${dots}</span>`;
+      + `<span class="dots" aria-hidden="true">${dots}</span></div>`;
     col.appendChild(head);
 
     // رصيد البنك المتبقي لكل مستوى — يُستهلك تدريجياً حسب ترتيب الخلايا
@@ -307,7 +331,9 @@ function renderBoard() {
     let playedInCol = 0;
 
     TIERS.forEach((tier, slot) => {
+      const key = roundId(id, slot);
       const inRound = isRoundPlayed(id, slot);
+      const res = inRound ? roundResult(key) : null;
       const bankLeft = tierPool(id, tier).length;
       let dead = false, drained = false;
 
@@ -322,16 +348,23 @@ function renderBoard() {
 
       const b = document.createElement("button");
       b.type = "button";
-      b.className = "cell" + (inRound ? " used" : "") + (drained ? " drained" : "");
       b.dataset.tier = String(tier);
       b.dataset.cat = id;
       b.dataset.slot = String(slot);
       b.disabled = dead;
 
       if (inRound) {
-        b.innerHTML = "";
-        b.setAttribute("aria-label", `خلية ${tier} لُعبت في هذه الجولة`);
+        /* الخلية المجابة: اسم الفريق صاحب الإجابة + قيمة السؤال بلون الفريق، أو رمادي هادئ إذا لم يجب أحد */
+        const w = res ? res.winner : null;
+        const who = (w === 0 || w === 1) ? state.teams[w].name : "";
+        b.className = "cell used " + (w === 0 ? "won-a" : w === 1 ? "won-b" : "won-none");
+        b.innerHTML = (who ? `<span class="cell-who">${esc(who)}</span>` : "")
+          + `<span class="cell-val">${tier}</span>`;
+        b.setAttribute("aria-label", who
+          ? `${who} أجاب سؤال ${tier} نقطة`
+          : `سؤال ${tier} نقطة — لم يجبه أحد`);
       } else {
+        b.className = "cell" + (drained ? " drained" : "");
         b.innerHTML = `${tier}<small>${bankLeft}</small>`;
         b.setAttribute("aria-label", `سؤال ${tier} نقطة، متبقي ${bankLeft} في هذا المستوى`);
         if (drained) b.title = "لا توجد أسئلة متبقية في هذا المستوى لهذا اللاعب";
@@ -373,9 +406,11 @@ function paintTurnQ() {
 function renderTeams() {
   ["A", "B"].forEach((L, i) => {
     const t = state.teams[i];
-    $("name" + L).textContent = t.name;
+    const nameEl = $("name" + L);
+    if (nameEl) nameEl.textContent = t.name;
     paintScore(L, t.score);
-    $("teamCard" + L).classList.toggle("active", state.turn === i);
+    const card = $("teamCard" + L);
+    if (card) card.classList.toggle("active", state.turn === i);
     const box = $("helps" + L);
     if (box) {
       box.innerHTML = "";
@@ -388,7 +423,9 @@ function renderTeams() {
       });
     }
   });
-  $("turnTeam").textContent = state.teams[state.turn].name;
+  /* السطر العلوي القديم للدور أُزيل — البطاقة المتوهجة تكفي */
+  const turnEl = $("turnTeam");
+  if (turnEl) turnEl.textContent = state.teams[state.turn].name;
 }
 
 function setUndoState() {
@@ -535,21 +572,23 @@ function award(teamIndex) {
     q: { catId, idx, wasUsedBefore: isUsed(catId, idx) },
   };
 
+  const winner = (teamIndex === 0 || teamIndex === 1) ? teamIndex : null;
+  let pts = q.d;
   let msg = "لا نقاط";
-  if (teamIndex !== null && teamIndex !== undefined) {
-    const t = state.teams[teamIndex];
-    const pts = q.d * (t.dbl ? 2 : 1);
+  if (winner !== null) {
+    const t = state.teams[winner];
+    pts = q.d * (t.dbl ? 2 : 1);
     t.score += pts;
     sfx.ok();
     msg = `+${pts} لـ${t.name}`;
-  } else { sfx.no(); }
+  } else { pts = 0; sfx.no(); }
 
   // يُحفظ السؤال لاسم اللاعب: لا يعود إليه أبداً
   state.bank[catId] = state.bank[catId] || {};
   state.bank[catId][idx] = true;
   saveBank();
 
-  state.roundUsed[roundId(catId, slot)] = true;
+  state.roundUsed[roundId(catId, slot)] = { winner, value: q.d, points: pts };
   state.teams.forEach((t) => { t.dbl = false; t.twoActive = false; });
   state.played += 1;
 
@@ -740,6 +779,16 @@ function backToSetup() {
   renderBankInfo();
 }
 
+/* زر المنزل: عودة لاختيار الفئات
+   - لم تبدأ الجولة: انتقال فوري بلا سؤال
+   - بدأت الجولة: تأكيد حتى لا تضيع نقاط اللعب بلمسة خاطئة */
+function goHome() {
+  if (state.active) { toast("أغلق السؤال أولاً ثم عد لاختيار الفئات", 2400); return; }
+  if (state.played > 0) { $("confirmModal").classList.add("open"); return; }
+  clearRound(state.user);
+  backToSetup();
+}
+
 /* ---------- بنك اللاعب: حفظ واستيراد ---------- */
 function exportBank() {
   if (!state.user) return;
@@ -810,36 +859,38 @@ function importBankFile(file) {
 
 /* ---------- ربط ---------- */
 function bind() {
-  $("loginBtn").addEventListener("click", () => enterSite($("loginName").value));
-  $("loginName").addEventListener("keydown", (e) => { if (e.key === "Enter") enterSite($("loginName").value); });
-  $("switchUser").addEventListener("click", logout);
+  on("loginBtn", "click", () => enterSite($("loginName").value));
+  on("loginName", "keydown", (e) => { if (e.key === "Enter") enterSite($("loginName").value); });
+  on("switchUser", "click", logout);
 
-  $("startBtn").addEventListener("click", () => { beep(600, .08); startGame(); });
+  on("startBtn", "click", () => { beep(600, .08); startGame(); });
   document.querySelectorAll("#catTabs .cat-tab").forEach((t) => {
     t.addEventListener("click", () => {
       state.catFilter = t.dataset.filter || "all";
       renderPicker();
     });
   });
-  $("rulesBtn").addEventListener("click", () => $("rulesModal").classList.add("open"));
-  $("closeRules").addEventListener("click", () => $("rulesModal").classList.remove("open"));
-  $("revealBtn").addEventListener("click", reveal);
-  $("nextTeamBtn").addEventListener("click", () => { if (state.phase === 0 && state.active) startPhase(1); });
-  $("closeQBtn").addEventListener("click", closeQuestion);
-  $("judgeA").addEventListener("click", () => award(0));
-  $("judgeB").addEventListener("click", () => award(1));
-  $("judgeNone").addEventListener("click", () => award(null));
-  $("undoBtn").addEventListener("click", undoLastAward);
+  on("rulesBtn", "click", () => $("rulesModal").classList.add("open"));
+  on("closeRules", "click", () => $("rulesModal").classList.remove("open"));
+  on("revealBtn", "click", reveal);
+  on("nextTeamBtn", "click", () => { if (state.phase === 0 && state.active) startPhase(1); });
+  on("closeQBtn", "click", closeQuestion);
+  on("judgeA", "click", () => award(0));
+  on("judgeB", "click", () => award(1));
+  on("judgeNone", "click", () => award(null));
+
+  // زر المنزل في منتصف الشريط: عودة لاختيار الفئات (بسؤال إن بدأت الجولة)
+  on("homeBtn", "click", goHome);
 
   // تعديل النقاط: اضغط رقم الفريق
   [["A", 0], ["B", 1]].forEach(([L, i]) => {
     const b = $("score" + L);
     if (b) b.addEventListener("click", () => openScoreEditor(i));
   });
-  $("closeScore").addEventListener("click", closeScoreEditor);
-  $("seCancel").addEventListener("click", closeScoreEditor);
-  $("seSave").addEventListener("click", commitScore);
-  $("seInput").addEventListener("keydown", (e) => {
+  on("closeScore", "click", closeScoreEditor);
+  on("seCancel", "click", closeScoreEditor);
+  on("seSave", "click", commitScore);
+  on("seInput", "keydown", (e) => {
     if (e.key === "Enter") { e.preventDefault(); commitScore(); }
     if (e.key === "Escape") { e.preventDefault(); closeScoreEditor(); }
   });
@@ -851,33 +902,23 @@ function bind() {
     });
   });
 
-  $("exportBank").addEventListener("click", exportBank);
-  $("importBank").addEventListener("click", () => $("bankFile").click());
-  $("bankFile").addEventListener("change", (e) => {
+  on("exportBank", "click", exportBank);
+  on("importBank", "click", () => { const f = $("bankFile"); if (f) f.click(); });
+  on("bankFile", "change", (e) => {
     const f = e.target.files && e.target.files[0];
     e.target.value = "";
     importBankFile(f);
   });
 
-  $("soundBtn").addEventListener("click", () => {
-    state.sound = !state.sound;
-    saveSound();
-    $("soundBtn").style.opacity = state.sound ? "1" : ".35";
-    if (state.sound) beep(600, .06);
-  });
-  $("fullBtn").addEventListener("click", () => {
-    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
-    else document.exitFullscreen?.();
-  });
-  $("endBtn").addEventListener("click", () => { if (!state.active) showWinner(); });
-  $("restartBtn").addEventListener("click", () => $("confirmModal").classList.add("open"));
-  $("confirmNo").addEventListener("click", () => $("confirmModal").classList.remove("open"));
-  $("confirmYes").addEventListener("click", () => {
+  /* أزرار الشريط القديمة (تراجع · صوت · ملء الشاشة · إنهاء · إعادة) أُزيلت من #board */
+  on("confirmNo", "click", () => $("confirmModal").classList.remove("open"));
+  on("confirmYes", "click", () => {
     $("confirmModal").classList.remove("open");
     clearRound(state.user);
     backToSetup();
+    toast("اختر 6 فئات لتبدأ جولة جديدة", 2400);
   });
-  $("playAgain").addEventListener("click", () => {
+  on("playAgain", "click", () => {
     $("winModal").classList.remove("open");
     clearRound(state.user);
     backToSetup();
@@ -931,6 +972,17 @@ function selfTest() {
   ok(document.querySelectorAll("#boardGrid .cell").length === PICK * 6, "36 خلية (6 فئات × 6)");
   ok(document.querySelectorAll("#boardGrid .col-head .dots i").length === PICK * 6, "6 نقاط جولة في رأس كل عمود");
 
+  /* --- الشريط العلوي الجديد: فريقان بالزاويتين + المنزل والشعار بالمنتصف --- */
+  ok(!document.querySelector("#board .turn-banner") && !$("turnTeam") && !$("turnQ"), "أُزيل شريط «الدور الآن» وعناصره");
+  ok(!document.querySelector("#board .foot") && !$("remaining") && !$("helpLine"), "أُزيل السطر السفلي أسفل اللوحة");
+  ok(!$("undoBtn") && !$("soundBtn") && !$("fullBtn") && !$("endBtn") && !$("restartBtn"), "أزرار الشريط القديمة أُزيلت كلها");
+  const bar = document.querySelector("#board header.bar");
+  ok(!!bar && getComputedStyle(bar).display === "grid", "الشريط العلوي شبكة grid ثلاثية المناطق");
+  ok(!!bar && !!$("teamCardA") && !!$("teamCardB")
+    && $("teamCardA").parentElement === bar && $("teamCardB").parentElement === bar, "بطاقتا الفريقين داخل الشريط نفسه");
+  ok(!!$("homeBtn") && !!$("homeBtn").closest(".bar-center"), "زر المنزل في منتصف الشريط");
+  ok(!!document.querySelector(".bar-center .bar-brand .bar-logo"), "شعار اللعبة بجانب زر المنزل");
+
   /* --- خلية واحدة تُغلق فقط، وشقيقتها تبقى فعّالة --- */
   const cid = state.picked[0];
   const scoreBefore = state.teams[0].score;
@@ -942,9 +994,18 @@ function selfTest() {
   const c0 = cellOf(cid, 0), c1 = cellOf(cid, 1);
   ok(!!c0 && c0.classList.contains("used"), "الخلية الملعوبة بالذات تتحول إلى .used");
   ok(!!c1 && !c1.classList.contains("used") && !c1.disabled, "الخلية الثانية من نفس المستوى تبقى فعّالة");
-  ok(state.roundUsed[cid + ":0"] === true, "roundUsed يسجل الخلية الملعوبة");
-  ok(state.roundUsed[cid + ":1"] !== true, "roundUsed لا يسجل الخلية الأخرى");
+  const res0 = state.roundUsed[cid + ":0"];
+  ok(!!res0 && res0.winner === 0 && res0.value === TIERS[0] && res0.points === TIERS[0],
+    "roundUsed يحفظ { winner, value, points } للخلية");
+  ok(!state.roundUsed[cid + ":1"], "roundUsed لا يسجل الخلية الأخرى");
   ok(state.teams[0].score === scoreBefore + TIERS[0], "النقاط تُضاف بدرجة السؤال");
+
+  /* --- الخلية المجابة: اسم الفريق + قيمة السؤال بلون الفريق --- */
+  const who0 = c0.querySelector(".cell-who"), val0 = c0.querySelector(".cell-val");
+  ok(c0.classList.contains("won-a"), "خلية إجابة الفريق الأول تحمل won-a");
+  ok(!!who0 && who0.textContent === state.teams[0].name, "الخلية تعرض اسم الفريق المجيب");
+  ok(!!val0 && val0.textContent === String(TIERS[0]), "الخلية تعرض قيمة السؤال");
+  ok(!c0.querySelector("small"), "لا يبقى عدّاد البنك داخل الخلية الملعوبة");
 
   /* --- التراجع عن آخر حكم --- */
   ok(undoLastAward() === true, "التراجع عن آخر حكم متاح بعد الحكم");
@@ -953,6 +1014,29 @@ function selfTest() {
   ok(!!c0b && !c0b.classList.contains("used"), "التراجع يعيد الخلية إلى اللوحة");
   ok(bankCount() === usedBefore, "التراجع يحذف السؤال من سجل البنك");
   ok(!state.roundUsed[cid + ":0"], "التراجع يمسح علامة الجولة");
+
+  /* --- الفريق الثاني: won-b --- */
+  openQuestion(cid, 1);
+  reveal();
+  award(1);
+  const cb = cellOf(cid, 1);
+  const who1 = cb ? cb.querySelector(".cell-who") : null;
+  ok(!!cb && cb.classList.contains("won-b") && !!who1 && who1.textContent === state.teams[1].name,
+    "خلية إجابة الفريق الثاني تحمل won-b وباسمه");
+  undoLastAward();
+
+  /* --- لم يجب أحد: رمادي هادئ بقيمة السؤال وحدها --- */
+  openQuestion(cid, 2);
+  reveal();
+  award(null);
+  const cn = cellOf(cid, 2);
+  const valN = cn ? cn.querySelector(".cell-val") : null;
+  ok(!!cn && cn.classList.contains("won-none") && !cn.querySelector(".cell-who"), "خلية «لا أحد» رمادية بلا اسم فريق");
+  ok(!!valN && valN.textContent === String(TIERS[2]), "خلية «لا أحد» تعرض قيمة السؤال");
+  ok(!!cn && /238, 241, 245/.test(getComputedStyle(cn).backgroundColor), "خلفية «لا أحد» رمادية هادئة");
+  ok(!!state.roundUsed[cid + ":2"] && state.roundUsed[cid + ":2"].winner === null, "roundUsed يسجل winner: null عند «لا أحد»");
+  undoLastAward();
+  ok(!state.roundUsed[cid + ":2"], "التراجع يمسح خلية «لا أحد»");
 
   /* --- تعديل النقاط يدوياً --- */
   const scBefore = state.teams[0].score;
@@ -968,7 +1052,7 @@ function selfTest() {
   setUndoState();
   openScoreEditor(1); $("seInput").value = "-50"; commitScore();
   ok(state.teams[1].score === 0, "النقاط لا تنزل تحت الصفر");
-  ok(state.lastSnapshot === null && $("undoBtn").disabled === true, "التعديل اليدوي يلغي تراجع الحكم السابق");
+  ok(state.lastSnapshot === null, "التعديل اليدوي يلغي تراجع الحكم السابق");
   state.teams[1].score = 0; render(); saveRound();
   ok(state.teams[0].score === scBefore, "تعديل فريق لا يمس فريقاً آخر");
 
@@ -979,7 +1063,7 @@ function selfTest() {
   reveal();
   award(1);
   const r1 = loadRound(state.user);
-  ok(!!r1 && r1.played === 1 && r1.roundUsed[cid + ":0"] === true
+  ok(!!r1 && r1.played === 1 && !!r1.roundUsed[cid + ":0"] && r1.roundUsed[cid + ":0"].winner === 1
     && r1.teams[1].score === TIERS[0] && r1.turn === 1, "الحفظ يحتوي النقاط والدور والخلية الملعوبة");
   undoLastAward();
   const r2 = loadRound(state.user);
@@ -1032,6 +1116,40 @@ function selfTest() {
   $("winModal").classList.remove("open");
   clearRound(state.user);
 
+  /* --- زر المنزل: عودة لاختيار الفئات --- */
+  state.picked = CATEGORIES.slice(0, 6).map((c) => c.id);
+  startGame();
+  ok(state.played === 0, "بداية الجولة: صفر أسئلة ملعوبة");
+  goHome();
+  ok($("setup").classList.contains("active") && !$("board").classList.contains("active"),
+    "زر المنزل يعود فوراً لاختيار الفئات قبل بدء اللعب");
+  ok(!loadRound(state.user) && state.picked.length === 0, "زر المنزل يصفّر الجولة والاختيار");
+
+  state.picked = CATEGORIES.slice(0, 6).map((c) => c.id);
+  startGame();
+  openQuestion(state.picked[0], 0);
+  reveal();
+  award(null);
+  goHome();
+  ok($("confirmModal").classList.contains("open"), "زر المنزل بعد بدء اللعب يطلب التأكيد");
+  $("confirmYes").click();
+  ok($("setup").classList.contains("active") && !$("board").classList.contains("active"),
+    "تأكيد الرجوع ينقل لاختيار الفئات");
+  ok(state.played === 0 && !loadRound(state.user), "تأكيد الرجوع يصفّر الجولة المحفوظة");
+
+  /* --- توافق الخلايا القديمة المخزنة كـ true --- */
+  state.picked = CATEGORIES.slice(0, 6).map((c) => c.id);
+  state.roundUsed = { [state.picked[0] + ":1"]: true };
+  state.played = 0;
+  renderBoard();
+  const legacy = cellOf(state.picked[0], 1);
+  const legacyVal = legacy ? legacy.querySelector(".cell-val") : null;
+  ok(!!legacy && legacy.classList.contains("won-none") && !!legacyVal && legacyVal.textContent === String(TIERS[1]),
+    "الخلية القديمة (true) تُعرض رمادية بقيمة السؤال");
+  ok(normResult(true, "x:2").value === TIERS[2], "normResult يفهم القيمة القديمة true");
+  state.roundUsed = {};
+  renderBoard();
+
   const pre = document.createElement("pre");
   pre.id = "selftest";
   pre.textContent = log.join("\n");
@@ -1041,8 +1159,6 @@ function selfTest() {
 
 loadSound();
 bind();
-const _sb = $("soundBtn");
-if (_sb) _sb.style.opacity = state.sound ? "1" : ".35";
 
 const params = new URLSearchParams(location.search);
 if (params.get("selftest") === "1") setTimeout(selfTest, 300);

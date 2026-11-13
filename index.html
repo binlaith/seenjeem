@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="styles.css?v=75" />
+<link rel="stylesheet" href="styles.css?v=82" />
 </head>
 <body>
 
@@ -84,50 +84,31 @@
 <!-- اللوحة -->
 <section id="board" class="screen">
   <header class="bar">
-    <div class="bar-brand"><img src="assets/icon.svg" alt="سين جيم تيمو" class="bar-logo" width="22" height="22" /><span>سين جيم تيمو</span></div>
-    <div class="scoreline">
-      <div class="team" id="teamCardA">
-        <span class="tname" id="nameA">—</span>
-        <button type="button" class="tscore" id="scoreA" title="اضغط لتعديل النقاط" aria-label="تعديل نقاط الفريق الأول">0</button>
-        <span class="helps-mini" id="helpsA"></span>
-      </div>
-      <span class="sep"></span>
-      <div class="team" id="teamCardB">
-        <span class="tname" id="nameB">—</span>
-        <button type="button" class="tscore" id="scoreB" title="اضغط لتعديل النقاط" aria-label="تعديل نقاط الفريق الثاني">0</button>
-        <span class="helps-mini" id="helpsB"></span>
-      </div>
+    <div class="team" id="teamCardA">
+      <span class="tname" id="nameA">—</span>
+      <button type="button" class="tscore" id="scoreA" title="اضغط لتعديل النقاط" aria-label="تعديل نقاط الفريق الأول">0</button>
+      <span class="helps-mini" id="helpsA"></span>
     </div>
-    <div class="bar-right">
-      <button class="icon" id="undoBtn" title="تراجع عن آخر حكم" aria-label="تراجع عن آخر حكم" disabled>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7 4 12l5 5"/><path d="M4 12h9a6 6 0 0 1 0 12"/></svg>
+
+    <div class="bar-center">
+      <button type="button" class="home-btn" id="homeBtn" title="الصفحة الرئيسية لاختيار الفئات" aria-label="الصفحة الرئيسية">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M3.4 10.7 12 3.6l8.6 7.1" />
+          <path d="M5.7 9.6V19a1.5 1.5 0 0 0 1.5 1.5h9.6a1.5 1.5 0 0 0 1.5-1.5V9.6" />
+          <path d="M9.8 20.5v-5.3h4.4v5.3" />
+        </svg>
       </button>
-      <button class="icon" id="soundBtn" title="الصوت" aria-label="الصوت">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/></svg>
-      </button>
-      <button class="icon" id="fullBtn" title="ملء الشاشة" aria-label="ملء الشاشة">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 15v5h-5M15 4h5v5M9 20H4v-5"/></svg>
-      </button>
-      <button class="end-btn" id="endBtn">إنهاء</button>
-      <button class="icon" id="restartBtn" title="لعبة جديدة" aria-label="لعبة جديدة">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.6-6.4"/><path d="M3 4v5h5"/></svg>
-      </button>
+      <div class="bar-brand"><img src="assets/icon.svg" class="bar-logo" alt="" /><span>سين جيم تيمو</span></div>
+    </div>
+
+    <div class="team" id="teamCardB">
+      <span class="tname" id="nameB">—</span>
+      <button type="button" class="tscore" id="scoreB" title="اضغط لتعديل النقاط" aria-label="تعديل نقاط الفريق الثاني">0</button>
+      <span class="helps-mini" id="helpsB"></span>
     </div>
   </header>
 
-  <div class="turn-banner">
-    <span class="tb-label">الدور الآن</span>
-    <b class="tb-team" id="turnTeam">—</b>
-    <span class="tb-hint">اختر فئة ثم قيمة السؤال</span>
-    <span class="tb-q" id="turnQ">السؤال 1 / 36</span>
-  </div>
-
   <div class="board-wrap"><div class="board" id="boardGrid"></div></div>
-
-  <footer class="foot">
-    <span id="remaining">—</span>
-    <span id="helpLine">الوسائل: صديق · جوابين · دبل</span>
-  </footer>
 </section>
 
 <!-- السؤال -->
@@ -224,8 +205,8 @@
 <!-- تأكيد -->
 <div class="modal" id="confirmModal">
   <div class="modal-card narrow center">
-    <div class="confirm-title">تبدأ لعبة جديدة؟</div>
-    <div class="confirm-msg">ستُفقد النقاط الحالية.</div>
+    <div class="confirm-title">العودة لاختيار الفئات من جديد؟</div>
+    <div class="confirm-msg">ستُفقد نقاط منتصف الجولة الحالية.</div>
     <div class="confirm-actions">
       <button class="btn" id="confirmYes">نعم</button>
       <button class="btn-text" id="confirmNo">رجوع</button>
@@ -257,7 +238,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="questions.js?v=75"></script>
-<script src="app.js?v=75"></script>
+<script src="questions.js?v=82"></script>
+<script src="app.js?v=82"></script>
 </body>
 </html>
