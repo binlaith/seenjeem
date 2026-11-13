@@ -2,7 +2,7 @@
    الملفات الأساسية: Network-First (التحديث يصل فوراً، والكاش بديل عند انقطاع الإنترنت)
    الهوية ورسومات الفئات والشعارات والأعلام: Cache-First بعد أول طلب. */
 
-const VERSION = "seenjeem-v60";
+const VERSION = "seenjeem-v65";
 
 /* رسومات الفئات — تُخزّن مسبقاً حتى تظهر شاشة الاختيار كاملة دون إنترنت */
 const CAT_IDS = [
@@ -13,9 +13,9 @@ const CAT_IDS = [
 const CORE = [
   "./",
   "./index.html",
-  "./styles.css?v=60",
-  "./app.js?v=60",
-  "./questions.js?v=60",
+  "./styles.css?v=65",
+  "./app.js?v=65",
+  "./questions.js?v=65",
   "./manifest.json",
   "./assets/icon.svg",
   ...CAT_IDS.map((id) => `./assets/cats/${id}.svg`),

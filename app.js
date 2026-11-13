@@ -559,6 +559,39 @@ function closeQuestion() {
   state.active = null;
 }
 
+/* ---------- تعديل النقاط يدوياً ---------- */
+let scoreEditing = null;
+
+function openScoreEditor(i) {
+  const t = state.teams[i];
+  if (!t) return;
+  scoreEditing = i;
+  $("seTitle").textContent = `تعديل نقاط ${t.name}`;
+  const inp = $("seInput");
+  inp.value = t.score;
+  $("scoreModal").classList.add("open");
+  setTimeout(() => { inp.focus(); inp.select(); }, 60);
+}
+
+function closeScoreEditor() {
+  scoreEditing = null;
+  $("scoreModal").classList.remove("open");
+}
+
+function commitScore() {
+  if (scoreEditing === null) return;
+  const i = scoreEditing;
+  const raw = Number($("seInput").value);
+  const v = Math.min(99999, Math.max(0, Math.round(isFinite(raw) ? raw : 0)));
+  state.teams[i].score = v;
+  // بعد تعديل يدوي يصبح تراجع «آخر حكم» مضللاً — نلغيه بدل تصحيح مزدوج
+  state.lastSnapshot = null;
+  render();
+  saveRound();
+  closeScoreEditor();
+  toast(`صارت نقاط ${state.teams[i].name} ${v}`, 2600);
+}
+
 /* ---------- الوسائل ---------- */
 function useHelp(kind) {
   const idx = phaseTeam();
@@ -755,6 +788,26 @@ function bind() {
   $("judgeNone").addEventListener("click", () => award(null));
   $("undoBtn").addEventListener("click", undoLastAward);
 
+  // تعديل النقاط: اضغط رقم الفريق
+  [["A", 0], ["B", 1]].forEach(([L, i]) => {
+    const b = $("score" + L);
+    if (b) b.addEventListener("click", () => openScoreEditor(i));
+  });
+  $("closeScore").addEventListener("click", closeScoreEditor);
+  $("seCancel").addEventListener("click", closeScoreEditor);
+  $("seSave").addEventListener("click", commitScore);
+  $("seInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); commitScore(); }
+    if (e.key === "Escape") { e.preventDefault(); closeScoreEditor(); }
+  });
+  document.querySelectorAll("#scoreModal .se-chip").forEach((b) => {
+    b.addEventListener("click", () => {
+      const cur = Number($("seInput").value) || 0;
+      const d = b.dataset.set;
+      $("seInput").value = d === "0" ? 0 : Math.max(0, cur + Number(d));
+    });
+  });
+
   $("exportBank").addEventListener("click", exportBank);
   $("importBank").addEventListener("click", () => $("bankFile").click());
   $("bankFile").addEventListener("change", (e) => {
@@ -788,6 +841,10 @@ function bind() {
   });
 
   document.addEventListener("keydown", (e) => {
+    if ($("scoreModal").classList.contains("open")) {
+      if (e.key === "Escape") closeScoreEditor();
+      return;
+    }
     if (e.key === "Escape" && $("qModal").classList.contains("open")) { closeQuestion(); return; }
     if (!state.active) return;
     if (e.code === "Space") { e.preventDefault(); if ($("answerBox").hidden) reveal(); }
@@ -853,6 +910,24 @@ function selfTest() {
   ok(!!c0b && !c0b.classList.contains("used"), "التراجع يعيد الخلية إلى اللوحة");
   ok(bankCount() === usedBefore, "التراجع يحذف السؤال من سجل البنك");
   ok(!state.roundUsed[cid + ":0"], "التراجع يمسح علامة الجولة");
+
+  /* --- تعديل النقاط يدوياً --- */
+  const scBefore = state.teams[0].score;
+  openScoreEditor(1);
+  ok($("scoreModal").classList.contains("open") && $("seTitle").textContent.includes(state.teams[1].name), "نافذة تعديل النقاط تفتح للفريق المطلوب");
+  $("seInput").value = "1234";
+  commitScore();
+  ok(state.teams[1].score === 1234, "تعديل النقاط يدوياً يعمل");
+  ok($("scoreB").textContent === "1234", "الواجهة تعرض النقاط المعدلة");
+  const sr = loadRound(state.user);
+  ok(!!sr && sr.teams[1].score === 1234, "تعديل النقاط يُحفظ في الجولة");
+  state.lastSnapshot = { teams: JSON.parse(JSON.stringify(state.teams)) };
+  setUndoState();
+  openScoreEditor(1); $("seInput").value = "-50"; commitScore();
+  ok(state.teams[1].score === 0, "النقاط لا تنزل تحت الصفر");
+  ok(state.lastSnapshot === null && $("undoBtn").disabled === true, "التعديل اليدوي يلغي تراجع الحكم السابق");
+  state.teams[1].score = 0; render(); saveRound();
+  ok(state.teams[0].score === scBefore, "تعديل فريق لا يمس فريقاً آخر");
 
   /* --- حفظ واستئناف الجولة --- */
   const r0 = loadRound(state.user);

@@ -81,13 +81,13 @@
     <div class="scoreline">
       <div class="team" id="teamCardA">
         <span class="tname" id="nameA">—</span>
-        <span class="tscore" id="scoreA">0</span>
+        <button type="button" class="tscore" id="scoreA" title="اضغط لتعديل النقاط" aria-label="تعديل نقاط الفريق الأول">0</button>
         <span class="helps-mini" id="helpsA"></span>
       </div>
       <span class="sep"></span>
       <div class="team" id="teamCardB">
         <span class="tname" id="nameB">—</span>
-        <span class="tscore" id="scoreB">0</span>
+        <button type="button" class="tscore" id="scoreB" title="اضغط لتعديل النقاط" aria-label="تعديل نقاط الفريق الثاني">0</button>
         <span class="helps-mini" id="helpsB"></span>
       </div>
     </div>
@@ -209,9 +209,31 @@
   </div>
 </div>
 
+
+<!-- تعديل النقاط -->
+<div class="modal" id="scoreModal">
+  <div class="modal-card narrow">
+    <div class="q-top">
+      <span class="q-cat" id="seTitle">تعديل النقاط</span>
+      <button class="icon icon-sm" id="closeScore" aria-label="إغلاق">✕</button>
+    </div>
+    <p class="se-hint">صحّح نقاط الفريق إذا أخطأت في التسجيل. لا يغيّر الأسئلة ولا الدور.</p>
+    <input class="se-input" id="seInput" type="number" inputmode="numeric" min="0" max="99999" step="50" aria-label="نقاط الفريق" />
+    <div class="se-chips">
+      <button type="button" class="se-chip" data-set="-200"><span dir="ltr">−200</span></button>
+      <button type="button" class="se-chip" data-set="+200"><span dir="ltr">+200</span></button>
+      <button type="button" class="se-chip" data-set="0">صفر</button>
+    </div>
+    <div class="actions">
+      <button class="btn" id="seSave">حفظ</button>
+      <button class="btn-text" id="seCancel">إلغاء</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<script src="questions.js?v=60"></script>
-<script src="app.js?v=60"></script>
+<script src="questions.js?v=65"></script>
+<script src="app.js?v=65"></script>
 </body>
 </html>
