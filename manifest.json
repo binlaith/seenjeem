@@ -1,0 +1,22 @@
+{
+  "name": "سين جيم — لعبة أسئلة بين فريقين",
+  "short_name": "سين جيم",
+  "description": "لعبة أسئلة عربية بين فريقين: 6 فئات × 6 أسئلة، وبنك شخصي لكل لاعب.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "theme_color": "#ffd34d",
+  "background_color": "#f3f9fe",
+  "categories": ["games", "education", "entertainment"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iI2ZmZDM0ZCIvPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzEyMzI0ZiIgc3Ryb2tlLXdpZHRoPSIyNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjEyOCIvPjxwYXRoIGQ9Ik0yNTYgMTIwdjcyIi8+PHBhdGggZD0iTTI1NiAzOTJ2LTcyIi8+PHBhdGggZD0iTTEyMCAyNTZoNzIiLz48cGF0aCBkPSJNMzkyIDI1NmgtNzIiLz48L2c+PC9zdmc+",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
