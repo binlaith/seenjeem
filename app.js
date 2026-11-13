@@ -459,7 +459,7 @@ function openQuestion(catId, slot) {
   state.teams.forEach((t) => { t.dbl = false; t.twoActive = false; });
 
   $("qCat").textContent = cat.name;
-  $("qValue").textContent = tier + " نقطة";
+  $("qValue").textContent = String(tier);
   $("qText").textContent = pickOne.q.q;
   if (pickOne.q.img) {
     $("qImg").src = pickOne.q.img;
@@ -500,7 +500,7 @@ function startPhase(p, bonus = 0) {
   state.left = state.phaseMax;
   state.lastTickSec = null;
   const team = state.teams[phaseTeam()];
-  $("phaseTeam").textContent = `دور ${team.name} · ${PHASE_TIME[p]} ثانية`;
+  $("phaseTeam").textContent = team.name;
   $("nextTeamBtn").classList.toggle("hidden", p === 1);
   $("clock").classList.remove("low");
   $("timeFill").classList.remove("low");
@@ -541,7 +541,9 @@ function paintJudge() {
   [0, 1].forEach((i) => {
     const t = state.teams[i], j = judgePoints(i);
     const el = i === 0 ? $("judgeA") : $("judgeB");
-    el.innerHTML = `<b>${esc(t.name)}</b><small><span dir="ltr">+${j.pts}</span>${j.dbl ? " (دبل)" : ""}</small>`;
+    el.innerHTML = j.dbl
+      ? `<b>${esc(t.name)}</b><small><span dir="ltr">+${j.pts}</span> دبل</small>`
+      : `<b>${esc(t.name)}</b>`;
   });
 }
 
@@ -695,11 +697,11 @@ function renderHelps() {
   const box = $("helpBox");
   if (!box) return;
   box.innerHTML = "";
-  [["friend", "صديق", "+دقيقة"], ["two", "جوابين", "إجابتان"], ["dbl", "دبل", "×2"]].forEach(([k, label, sub]) => {
+  [["friend", "اتصال بصديق"], ["two", "جوابين"], ["dbl", "دبل ×2"]].forEach(([k, label]) => {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "help";
-    b.innerHTML = `${label} · <span style="opacity:.55">${sub}</span>`;
+    b.textContent = label;
     b.disabled = !t.helps[k];
     b.addEventListener("click", () => useHelp(k));
     box.appendChild(b);

@@ -744,27 +744,40 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
 
 .q-top { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); }
 .q-cat { font-size: var(--t-sm); color: var(--muted); }
-.q-value {
-  font-size: var(--t-sm); font-weight: 700; color: var(--ink);
-  background: linear-gradient(180deg, #ffe27a 0%, #ffd34d 60%, #f7c72c 100%);
-  border: 1.5px solid #e0b62f;
-  border-radius: 999px;
-  padding: 3px 12px;
-  box-shadow: 0 2px 0 #d9a309;
-}
+.q-value { font-size: var(--t-sm); font-weight: 600; color: var(--muted); }
 
-.phase { display: flex; align-items: baseline; justify-content: space-between; margin-top: var(--s5); }
-.phase-team { font-size: var(--t-sm); color: var(--muted); font-weight: 700; }
-.clock { font-size: var(--t-2xl); font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: .5px; color: var(--ink); }
-.clock.low { color: #8a5b00; }
+/* رأس بطاقة السؤال: سطر واحد هادئ — الفئة · القيمة ... اسم الفريق + العداد + إغلاق */
+.q-head {
+  display: flex; align-items: center; gap: 7px;
+  min-height: 26px;
+  font-size: var(--t-sm); line-height: 1.2; color: var(--muted);
+}
+.q-head .q-cat,
+.q-head .q-value {
+  flex: 0 0 auto;
+  max-width: 40%;
+  font-size: 13px; font-weight: 600; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.q-dot { color: var(--muted); opacity: .5; }
+.q-head-gap { flex: 1 1 auto; min-width: 8px; }
+.q-turn {
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 42%;
+}
+.q-head .clock {
+  font-size: 18px; font-weight: 700; letter-spacing: 0;
+  font-variant-numeric: tabular-nums; color: var(--ink);
+}
+.q-head .clock.low { color: #8a5b00; }
+.q-head .icon-sm { width: 26px; height: 26px; font-size: 12px; border-radius: 8px; }
 
 .bar-time {
-  height: 7px;
-  background: #e3effb;
-  margin-top: var(--s2);
+  height: 3px;
+  background: var(--blue-100);
+  margin-top: 9px;
   border-radius: 999px;
   overflow: hidden;
-  box-shadow: inset 0 1px 2px rgba(18, 50, 79, .06);
 }
 .bar-time i {
   display: block; height: 100%; width: 100%;
@@ -779,8 +792,13 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   animation: timePulse 1s ease-in-out infinite;
 }
 
-.q-body { text-align: center; padding: var(--s6) var(--s1) var(--s5); }
-.q-img { max-height: 180px; max-width: 60%; margin: 0 auto var(--s5); display: block; }
+/* منطقة السؤال: بيضاء صافية وواسعة — بطل البطاقة */
+.q-body {
+  text-align: center;
+  background: #ffffff;
+  padding: 36px 20px 32px;
+}
+.q-img { max-height: 180px; max-width: 60%; margin: 0 auto var(--s4); display: block; }
 /* صور الأعلام: إطار رفيع يوضّح الأعلام ذات الخلفية البيضاء على بطاقة السؤال البيضاء */
 .q-img.is-flag {
   border: 1px solid var(--line);
@@ -790,24 +808,31 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   width: auto;
 }
 .q-text {
-  font-size: clamp(22px, 2.6vw, var(--t-2xl));
-  font-weight: 700;
-  line-height: 1.7;
-  max-width: 620px;
-  margin: 0 auto;
+  font-size: clamp(22px, 3vw, 34px);
+  font-weight: 800;
+  line-height: 1.65;
   color: var(--ink);
+  max-width: 580px;
+  margin: 0 auto;
+}
+/* على الديسكتوب: مساحة بيضاء مريحة تجعل السؤال بطل البطاقة */
+@media (min-width: 761px) and (min-height: 541px) {
+  #qModal .q-body {
+    display: flex; flex-direction: column; justify-content: center;
+    min-height: 200px;
+  }
 }
 
 .answer {
-  background: var(--blue-100);
-  border: 1px solid var(--blue-200);
+  background: var(--blue-50);
+  border: 1px solid var(--blue-100);
   border-radius: var(--r);
-  padding: var(--s3) var(--s4);
+  padding: 14px 18px;
   text-align: center;
-  margin-bottom: var(--s4);
+  margin-bottom: var(--s3);
 }
-.answer-label { display: block; font-size: var(--t-xs); color: var(--blue-700); margin-bottom: 2px; }
-.answer-text { font-size: var(--t-xl); font-weight: 700; color: var(--ink); }
+.answer-label { display: block; font-size: var(--t-xs); color: var(--muted); margin-bottom: 3px; }
+.answer-text { font-size: clamp(22px, 2.6vw, 30px); font-weight: 800; line-height: 1.5; color: var(--ink); }
 
 .actions { display: flex; align-items: center; justify-content: center; gap: var(--s3); }
 .actions .btn { min-width: 220px; }
@@ -845,21 +870,26 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
 #judgeB b { color: var(--team-b-ink); }
 
 .helps {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s2);
-  margin-top: var(--s5); padding-top: var(--s4); border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  margin-top: 14px;
 }
 /* بعد كشف الإجابة يفرغ #helpBox — فلا يبقى خطه العلوي ظاهراً كخط معزول */
 .helps:empty { display: none; }
 .help {
-  background: var(--blue-100);
-  border: 1px solid var(--blue-200);
-  border-radius: 10px;
-  color: var(--ink);
-  font-size: var(--t-sm);
-  padding: var(--s2) var(--s1);
+  display: flex; align-items: center; justify-content: center;
+  background: #f5f9fd;
+  border: 1px solid #dce8f5;
+  border-radius: 999px;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 8px;
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease, background .15s ease;
 }
-.help:hover:not(:disabled) { border-color: var(--blue-500); background: var(--blue-200); }
-.help:disabled { opacity: .35; }
+.help:hover:not(:disabled) { color: var(--blue-700); border-color: var(--blue-300); background: #eaf3fc; }
+.help:disabled { opacity: .4; cursor: default; }
 
 .rules { text-align: right; margin: var(--s4) 0 0; padding-inline-start: var(--s5); line-height: 2; font-size: var(--t-base); }
 .rules li { margin-bottom: var(--s1); }
@@ -908,9 +938,10 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   .actions .btn { width: 100%; }
 }
 
-.modal-card.revealed .phase,
+.modal-card.revealed .q-turn,
+.modal-card.revealed .q-head .clock,
 .modal-card.revealed .bar-time { display: none; }
-.modal-card.revealed .q-body { padding-top: var(--s2); }
+.modal-card.revealed .q-body { padding-top: 24px; }
 
 /* ---------- الدخول ---------- */
 #login {
@@ -1157,19 +1188,25 @@ input { color: var(--ink); }
   .cell-who { font-size: 9px; }
   .cell-val { font-size: 12px; }
 
-  /* نافذة السؤال بالطول: مضغوطة حتى لا يحتاج اللاعب سكرولاً داخلها */
-  #qModal .modal-card { padding: var(--s3) var(--s4); max-height: 94dvh; }
-  #qModal .q-body { padding: var(--s3) 0 var(--s2); }
+  /* نافذة السؤال بالطول: رأس هادئ واحد والسؤال هو البطل */
+  #qModal .modal-card { padding: 10px 14px 12px; max-height: 94dvh; }
+  #qModal .q-head { gap: 5px; min-height: 24px; }
+  #qModal .q-head .q-cat,
+  #qModal .q-head .q-value { font-size: 12px; max-width: 34%; }
+  #qModal .q-turn { font-size: 11px; max-width: 34%; }
+  #qModal .q-head .clock { font-size: 17px; }
+  #qModal .q-head .icon-sm { width: 24px; height: 24px; font-size: 11px; }
+  #qModal .bar-time { margin-top: 8px; }
+  #qModal .q-body { padding: 22px 10px 20px; }
   #qModal .q-img { max-height: 120px; margin-bottom: var(--s3); }
-  #qModal .q-text { font-size: clamp(17px, 4.6vw, 21px); line-height: 1.55; }
-  #qModal .phase { margin-top: var(--s3); }
-  #qModal .clock { font-size: 26px; }
+  #qModal .q-text { font-size: clamp(21px, 6vw, 27px); line-height: 1.6; }
   #qModal .actions { flex-direction: row; gap: var(--s2); }
   #qModal .actions .btn { width: auto; flex: 1 1 auto; min-width: 0; padding: 11px 12px; font-size: 15px; }
-  #qModal .answer { margin-bottom: var(--s2); padding: 8px 12px; }
-  #qModal .answer-text { font-size: var(--t-lg); }
-  #qModal .helps { margin-top: var(--s2); padding-top: var(--s2); gap: 4px; }
+  #qModal .answer { margin-bottom: var(--s2); padding: 10px 12px; }
+  #qModal .answer-text { font-size: clamp(22px, 5.6vw, 26px); }
+  #qModal .helps { margin-top: 10px; gap: 6px; }
   #qModal .helps:empty { display: none; }
+  #qModal .help { font-size: 11.5px; padding: 7px 4px; }
   #qModal .btn-team { padding: 10px 6px; }
 }
 
@@ -1226,22 +1263,27 @@ input { color: var(--ink); }
   .cell-who { font-size: 8.5px; line-height: 1.1; }
   .cell-val { font-size: 11px; line-height: 1.05; }
 
-  /* نافذة السؤال مضغوطة رأسياً ليظهر السؤال والأزرار */
+  /* نافذة السؤال مضغوطة رأسياً: رأس واحد رفيع والسؤال والأزرار ظاهرة */
   .modal { padding: 6px; }
-  #qModal .modal-card { padding: 10px 14px; max-height: 96dvh; }
-  #qModal .q-body { padding: 8px 2px; }
+  #qModal .modal-card { padding: 8px 12px 10px; max-height: 96dvh; }
+  #qModal .q-head { gap: 5px; min-height: 22px; }
+  #qModal .q-head .q-cat,
+  #qModal .q-head .q-value { font-size: 11.5px; }
+  #qModal .q-turn { font-size: 11px; }
+  #qModal .q-head .clock { font-size: 15px; }
+  #qModal .q-head .icon-sm { width: 22px; height: 22px; font-size: 10px; }
+  #qModal .bar-time { margin-top: 6px; }
+  #qModal .q-body { padding: 12px 6px 10px; }
   #qModal .q-img { max-height: 90px; margin-bottom: var(--s2); }
   /* الأعلام تحتفظ بإطارها لكن بارتفاع أقصر ليظل المودال مريحاً بالعرض */
   #qModal .q-img.is-flag { max-height: 88px; }
-  #qModal .q-text { font-size: clamp(16px, 4.4dvh, 22px); line-height: 1.55; }
-  #qModal .phase { margin-top: 6px; }
-  #qModal .clock { font-size: 20px; }
+  #qModal .q-text { font-size: clamp(18px, 2.4vw, 24px); line-height: 1.45; }
   #qModal .answer { margin-bottom: var(--s2); padding: 6px 12px; }
   #qModal .answer-text { font-size: var(--t-lg); }
-  #qModal .helps { margin-top: var(--s2); padding-top: 6px; }
+  #qModal .helps { margin-top: 8px; }
   #qModal .actions { flex-direction: row; gap: 8px; }
   #qModal .actions .btn { width: auto; min-width: 0; flex: 0 1 auto; padding: 9px 16px; font-size: 15px; }
-  #qModal .help { font-size: 11px; padding: 5px 3px; }
+  #qModal .help { font-size: 11px; padding: 5px 6px; }
 
   /* بعد كشف الإجابة: الإجابة والحكم جنباً إلى جنب بدل الترتيب الرأسي */
   #qModal .modal-card.revealed {
@@ -1251,7 +1293,7 @@ input { color: var(--ink); }
     align-content: start;
     align-items: start;
   }
-  #qModal .modal-card.revealed .q-top,
+  #qModal .modal-card.revealed .q-head,
   #qModal .modal-card.revealed .active-helps,
   #qModal .modal-card.revealed .q-body,
   #qModal .modal-card.revealed .helps { grid-column: 1 / -1; }

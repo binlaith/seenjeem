@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="styles.css?v=82" />
+<link rel="stylesheet" href="styles.css?v=84" />
 </head>
 <body>
 
@@ -113,20 +113,19 @@
 
 <!-- السؤال -->
 <div class="modal" id="qModal">
-  <div class="modal-card">
-    <div class="q-top">
+  <div class="modal-card q-card">
+    <div class="q-head">
       <span class="q-cat" id="qCat">—</span>
+      <span class="q-dot" aria-hidden="true">·</span>
       <span class="q-value" id="qValue">200</span>
+      <span class="q-head-gap"></span>
+      <span class="q-turn" id="phaseTeam">—</span>
+      <span class="clock" id="clock">1:00</span>
       <button class="icon icon-sm" id="closeQBtn" title="إلغاء السؤال (Esc)" aria-label="إلغاء السؤال">✕</button>
     </div>
+    <div class="bar-time"><i id="timeFill"></i></div>
 
     <div class="active-helps" id="activeHelps" hidden></div>
-
-    <div class="phase">
-      <span class="phase-team" id="phaseTeam">—</span>
-      <span class="clock" id="clock">1:00</span>
-    </div>
-    <div class="bar-time"><i id="timeFill"></i></div>
 
     <div class="q-body">
       <img class="q-img" id="qImg" alt="" hidden />
@@ -238,7 +237,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="questions.js?v=82"></script>
-<script src="app.js?v=82"></script>
+<script src="questions.js?v=84"></script>
+<script src="app.js?v=84"></script>
 </body>
 </html>
