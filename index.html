@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="styles.css?v=85" />
+<link rel="stylesheet" href="styles.css?v=88" />
 </head>
 <body>
 
@@ -87,7 +87,7 @@
     <div class="team" id="teamCardA">
       <span class="tname" id="nameA">—</span>
       <button type="button" class="tscore" id="scoreA" title="اضغط لتعديل النقاط" aria-label="تعديل نقاط الفريق الأول">0</button>
-      <span class="helps-mini" id="helpsA"></span>
+      <button type="button" class="dbl-btn" id="dblA" title="مضاعفة نقاط السؤال القادم" aria-label="دبل نقاط الفريق الأول" aria-pressed="false">دبل</button>
     </div>
 
     <div class="bar-center">
@@ -104,7 +104,7 @@
     <div class="team" id="teamCardB">
       <span class="tname" id="nameB">—</span>
       <button type="button" class="tscore" id="scoreB" title="اضغط لتعديل النقاط" aria-label="تعديل نقاط الفريق الثاني">0</button>
-      <span class="helps-mini" id="helpsB"></span>
+      <button type="button" class="dbl-btn" id="dblB" title="مضاعفة نقاط السؤال القادم" aria-label="دبل نقاط الفريق الثاني" aria-pressed="false">دبل</button>
     </div>
   </header>
 
@@ -121,7 +121,6 @@
       <span class="q-head-gap"></span>
       <span class="q-turn" id="phaseTeam">—</span>
       <span class="clock" id="clock">1:00</span>
-      <button class="icon icon-sm" id="closeQBtn" title="إلغاء السؤال (Esc)" aria-label="إلغاء السؤال">✕</button>
     </div>
     <div class="bar-time"><i id="timeFill"></i></div>
 
@@ -169,7 +168,8 @@
       <li>عند فتح السؤال يبدأ وقت الفريق صاحب الدور: <b>دقيقة واحدة</b>.</li>
       <li>إذا لم يجب، تنتقل الفرصة للفريق الآخر: <b>30 ثانية فقط</b>.</li>
       <li>بعد «اكشف الإجابة» يختار المقدّم الفريق الذي أجاب صحيحاً، وينتقل الدور دائماً للفريق الآخر.</li>
-      <li>لكل فريق ثلاث وسائل، مرة واحدة لكل واحدة: اتصال بصديق (+دقيقة) · جاوب جوابين · دبل نقاط.</li>
+      <li>لكل فريق ثلاث وسائل، مرة واحدة لكل واحدة: اتصال بصديق (+دقيقة) · جاوب جوابين — تُطلب داخل السؤال. أما <b>الدبل</b> فيُفعّل من الشريط العلوي بجانب اسم الفريق <b>قبل</b> فتح السؤال.</li>
+      <li>السؤال لا يُغلق ولا يُلغى: يبقى مفتوحاً حتى يُحكم على الإجابة (أو «لا أحد») وتُحتسب النقاط.</li>
       <li>إذا نفدت أسئلة فئة كاملة (300 سؤال) تُغلق الفئة في شاشة الاختيار.</li>
     </ol>
   </div>
@@ -237,7 +237,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="questions.js?v=85"></script>
-<script src="app.js?v=85"></script>
+<script src="questions.js?v=88"></script>
+<script src="app.js?v=88"></script>
 </body>
 </html>

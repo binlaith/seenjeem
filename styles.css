@@ -418,7 +418,7 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
 /* ---------- بطاقة كل فريق: لون هوية + شريط لوني + نقاط بارزة ---------- */
 .team {
   position: relative;
-  display: grid; grid-template-columns: auto auto;
+  display: grid; grid-template-columns: auto auto auto;
   column-gap: var(--s2); align-items: center;
   border-radius: 12px;
   padding: 4px 12px;
@@ -1018,6 +1018,7 @@ input { color: var(--ink); }
 .tscore.bump { animation: scorePop .4s cubic-bezier(.2, .8, .3, 1.1); }
 .team .tname { grid-column: 1; }
 .team .tscore { grid-column: 2; }
+.team .dbl-btn { grid-column: 3; }
 .helps-mini { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
 .help-dot {
   font-size: 9px; line-height: 1.7;
@@ -1325,3 +1326,16 @@ input { color: var(--ink); }
 /* مسافة اللوحة: واحدة أفقياً ورأسياً */
 @media (max-width: 760px) { :root { --board-gap: 10px; } }
 @media (max-height: 700px) and (orientation: landscape) { :root { --board-gap: 8px; } }
+
+/* --- زر الدبل بجانب اسم الفريق (قبل السؤال) --- */
+.dbl-btn {
+  font: inherit; font-size: 10.5px; font-weight: 700; line-height: 1.5;
+  padding: 2px 8px; border-radius: 999px; white-space: nowrap;
+  border: 1px solid var(--line); background: var(--white); color: var(--muted);
+  cursor: pointer; transition: background .12s, color .12s, border-color .12s, opacity .12s;
+}
+.dbl-btn:hover:not(:disabled) { border-color: var(--yellow); color: var(--ink); }
+.dbl-btn.armed { background: var(--yellow); border-color: #f0c23c; color: var(--ink); box-shadow: 0 1px 0 #e8c14a; }
+.dbl-btn.spent { opacity: .35; text-decoration: line-through; cursor: default; }
+.dbl-btn:disabled { cursor: default; }
+@media (max-width: 760px) { .dbl-btn { font-size: 9px; padding: 1px 6px; } }

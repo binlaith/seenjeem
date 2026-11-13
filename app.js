@@ -121,7 +121,7 @@ function normTeam(t, i) {
     name: (t && typeof t.name === "string" && t.name.trim()) ? t.name.trim().slice(0, 18) : fallback,
     score: Number(t && t.score) || 0,
     helps: { friend: helps.friend !== false, two: helps.two !== false, dbl: helps.dbl !== false },
-    dbl: false,
+    dbl: !!(t && t.dbl),
     twoActive: false,
   };
 }
@@ -411,16 +411,18 @@ function renderTeams() {
     paintScore(L, t.score);
     const card = $("teamCard" + L);
     if (card) card.classList.toggle("active", state.turn === i);
-    const box = $("helps" + L);
-    if (box) {
-      box.innerHTML = "";
-      ["friend", "two", "dbl"].forEach((k) => {
-        const s = document.createElement("span");
-        s.className = "help-dot" + (t.helps[k] ? "" : " spent");
-        s.textContent = HELP_LABEL[k];
-        s.title = `${HELP_LABEL[k]}: ${t.helps[k] ? "متاحة" : "استُخدمت"}`;
-        box.appendChild(s);
-      });
+    const dbl = $("dbl" + L);
+    if (dbl) {
+      const armed = !!t.dbl;
+      const spent = !t.helps.dbl;
+      dbl.classList.toggle("armed", armed);
+      dbl.classList.toggle("spent", spent && !armed);
+      dbl.disabled = (spent && !armed) || !!state.active;
+      dbl.setAttribute("aria-pressed", armed ? "true" : "false");
+      dbl.textContent = armed ? "دبل ×2" : "دبل";
+      dbl.title = armed
+        ? "الدبل مفعّل — اضغط لإلغائه قبل فتح السؤال"
+        : spent ? "استُخدم دبل هذا الفريق" : "مضاعفة نقاط السؤال القادم";
     }
   });
   /* السطر العلوي القديم للدور أُزيل — البطاقة المتوهجة تكفي */
@@ -456,7 +458,10 @@ function openQuestion(catId, slot) {
 
   const pickOne = pool[Math.floor(Math.random() * pool.length)];
   state.active = { catId, slot, idx: pickOne.i, q: pickOne.q, tier, helps: [] };
-  state.teams.forEach((t) => { t.dbl = false; t.twoActive = false; });
+  state.teams.forEach((t, i) => {
+    t.twoActive = false;
+    if (t.dbl) state.active.helps.push({ kind: "dbl", team: i });
+  });
 
   $("qCat").textContent = cat.name;
   $("qValue").textContent = String(tier);
@@ -488,6 +493,7 @@ function openQuestion(catId, slot) {
   document.querySelector("#qModal .modal-card").classList.remove("revealed");
   $("qModal").classList.add("open");
   renderActiveHelps();
+  renderTeams();
   sfx.open();
   startPhase(0);
 }
@@ -608,7 +614,7 @@ function undoLastAward() {
   if (!s) return false;
 
   state.teams = JSON.parse(JSON.stringify(s.teams));
-  state.teams.forEach((t) => { t.dbl = false; t.twoActive = false; });
+  state.teams.forEach((t) => { t.twoActive = false; });
   state.turn = s.turn;
   state.played = s.played;
   state.roundUsed = JSON.parse(JSON.stringify(s.roundUsed || {}));
@@ -633,6 +639,7 @@ function closeQuestion() {
   $("activeHelps").hidden = true;
   $("activeHelps").innerHTML = "";
   state.active = null;
+  renderTeams();   // أعد تفعيل أزرار الدبل بعد إغلاق السؤال
 }
 
 /* ---------- تعديل النقاط يدوياً ---------- */
@@ -668,6 +675,24 @@ function commitScore() {
   toast(`صارت نقاط ${state.teams[i].name} ${v}`, 2600);
 }
 
+/* ---------- الدبل: يُفعّل قبل السؤال من الشريط ---------- */
+function toggleDbl(i) {
+  const t = state.teams[i];
+  if (!t) return;
+  if (state.active) { toast("الدبل يُفعّل قبل فتح السؤال"); return; }
+  if (t.dbl) {
+    t.dbl = false; t.helps.dbl = true;
+    toast(`أُلغي دبل ${t.name}`);
+  } else {
+    if (!t.helps.dbl) { toast("استُخدم دبل هذا الفريق"); return; }
+    t.dbl = true; t.helps.dbl = false;
+    toast(`دبل مفعّل لـ${t.name} — يُضاعف السؤال القادم`, 3200);
+  }
+  beep(620, .06);
+  renderTeams();
+  saveRound();
+}
+
 /* ---------- الوسائل ---------- */
 function useHelp(kind) {
   const idx = phaseTeam();
@@ -682,7 +707,6 @@ function useHelp(kind) {
     paintClock();
   }
   if (kind === "two") { t.twoActive = true; toast(`${t.name} يمكنه تقديم إجابتين`); }
-  if (kind === "dbl") { t.dbl = true; toast(`${t.name} ضاعف نقاط السؤال`); }
 
   state.active.helps.push({ kind, team: idx });
   beep(520, .06);
@@ -697,7 +721,7 @@ function renderHelps() {
   const box = $("helpBox");
   if (!box) return;
   box.innerHTML = "";
-  [["friend", "اتصال بصديق"], ["two", "جوابين"], ["dbl", "دبل ×2"]].forEach(([k, label]) => {
+  [["friend", "اتصال بصديق"], ["two", "جوابين"]].forEach(([k, label]) => {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "help";
@@ -724,7 +748,8 @@ function renderActiveHelps() {
     .sort((x, y) => (order[x.kind] || 9) - (order[y.kind] || 9))
     .forEach((h) => {
       const team = state.teams[h.team];
-      const name = team ? team.name : "";
+      // «فريق سين» ← «سين» حتى لا تصير العبارة «لفريق فريق سين»
+      const name = team ? team.name.replace(/^فريق\s+/, "") : "";
       const label = h.kind === "friend" ? `+60 ثانية لفريق ${name}`
         : h.kind === "two" ? `جوابان متاحان لفريق ${name}`
         : `دبل ×2 لفريق ${name}`;
@@ -876,7 +901,10 @@ function bind() {
   on("closeRules", "click", () => $("rulesModal").classList.remove("open"));
   on("revealBtn", "click", reveal);
   on("nextTeamBtn", "click", () => { if (state.phase === 0 && state.active) startPhase(1); });
-  on("closeQBtn", "click", closeQuestion);
+  [["A", 0], ["B", 1]].forEach(([L, i]) => {
+    const b = $("dbl" + L);
+    if (b) b.addEventListener("click", () => toggleDbl(i));
+  });
   on("judgeA", "click", () => award(0));
   on("judgeB", "click", () => award(1));
   on("judgeNone", "click", () => award(null));
@@ -931,7 +959,6 @@ function bind() {
       if (e.key === "Escape") closeScoreEditor();
       return;
     }
-    if (e.key === "Escape" && $("qModal").classList.contains("open")) { closeQuestion(); return; }
     if (!state.active) return;
     if (e.code === "Space") { e.preventDefault(); if ($("answerBox").hidden) reveal(); }
     if (!$("answerBox").hidden) {
@@ -1016,6 +1043,35 @@ function selfTest() {
   ok(!!c0b && !c0b.classList.contains("used"), "التراجع يعيد الخلية إلى اللوحة");
   ok(bankCount() === usedBefore, "التراجع يحذف السؤال من سجل البنك");
   ok(!state.roundUsed[cid + ":0"], "التراجع يمسح علامة الجولة");
+
+  /* --- لا زر إغلاق: السؤال يُغلق بالحكم فقط --- */
+  ok(!$("closeQBtn"), "زر إغلاق السؤال أُزيل من النافذة");
+  openQuestion(cid, 0);
+  document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  ok($("qModal").classList.contains("open"), "Esc لا يغلق السؤال");
+  closeQuestion(); // تنظيف داخلي للاختبار فقط
+
+  /* --- الدبل: يُفعّل قبل السؤال من الشريط --- */
+  ok(!!$("dblA") && !!$("dblB"), "زر دبل موجود بجانب اسم كل فريق");
+  $("dblA").click();
+  ok(state.teams[0].dbl === true && state.teams[0].helps.dbl === false, "الدبل يتفعّل قبل السؤال ويُستهلك");
+  ok($("dblA").classList.contains("armed") && $("dblA").getAttribute("aria-pressed") === "true", "زر الدبل يظهر مفعّلاً");
+  $("dblA").click();
+  ok(state.teams[0].dbl === false && state.teams[0].helps.dbl === true, "إلغاء الدبل قبل السؤال يعيد الوسيلة");
+
+  $("dblA").click();
+  const dblBase = state.teams[0].score;
+  openQuestion(cid, 0);
+  ok($("dblA").disabled === true, "زر الدبل يتعطّل بعد فتح السؤال");
+  ok($("activeHelps").textContent.includes("دبل"), "شارة الدبل تظهر داخل السؤال");
+  reveal();
+  award(0);
+  ok(state.teams[0].score === dblBase + TIERS[0] * 2, "الدبل يضاعف نقاط السؤال");
+  ok(state.teams[0].dbl === false && state.teams[0].helps.dbl === false, "الدبل يُستهلك بعد الحكم");
+  undoLastAward();
+  state.teams[0].dbl = false; state.teams[0].helps.dbl = true;
+  render(); saveRound();
+  ok(state.teams[0].score === dblBase, "التراجع يعيد نقاط الدبل كما كانت");
 
   /* --- الفريق الثاني: won-b --- */
   openQuestion(cid, 1);
