@@ -504,16 +504,37 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   grid-template-columns: repeat(6, minmax(0, 1fr));
   align-content: stretch;
   row-gap: var(--board-gap);
-  column-gap: var(--board-gap);
+  column-gap: clamp(10px, 1.3vw, 18px);
 }
 
 /* الرأس صفٌّ ثابت الارتفاع + 6 صفوف تتقاسم الباقي بالضبط ⇒ تصطف الصفوف أفقياً ولا سكرول */
+/* ── مسار زجاجي ناعم (Frosted Column Tray): كل فئة مع أسئلتها الستة كوحدة بصرية واحدة.
+      الزجاج نفسه هو ما يربط الفئة بأسئلتها بصرياً — بلا خطوط جدول. ── */
 .col {
   display: grid;
   grid-template-rows: var(--head-h, 54px) repeat(6, minmax(0, 1fr));
   gap: var(--board-gap);
   min-height: 0; min-width: 0;
   height: 100%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.66) 0%, rgba(232, 244, 253, 0.54) 100%);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(164, 202, 236, 0.78);
+  border-radius: 16px;
+  padding: 8px 8px 10px;
+  box-shadow: 0 6px 20px rgba(18, 50, 79, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+/* تحويم داخل عمود نشط: حافة ذهبية هادئة وظل أعمق */
+.col:not(.done):hover {
+  border-color: rgba(235, 184, 34, 0.72);
+  box-shadow: 0 8px 24px rgba(18, 50, 79, 0.09), inset 0 1px 0 #ffffff;
+}
+/* انتهاء أسئلة العمود في الجولة: زجاج خافت وهادئ يتوارى خلف اللعب */
+.col.done {
+  background: rgba(228, 238, 248, 0.36);
+  border-color: rgba(180, 204, 226, 0.45);
+  box-shadow: none;
 }
 
 /* رأس العمود: صورة الفئة كخلفية + طبقة تعتيم واحدة متدرّجة + نص أبيض بهالة تباين.
@@ -598,6 +619,10 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   box-shadow: 0 3px 0 #b3d2ee, 0 4px 10px rgba(18, 50, 79, .05);
   transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
 }
+
+/* قاعدة الزوايا المتداخلة: رأس الفئة والبلاطات بنفس هندسة الإطار الزجاجي ⇒ وحدة واحدة */
+.col-head,
+.col .cell { border-radius: 10px; }
 
 /* 200: بلاطة بيضاء مشرقة */
 .cell[data-tier="200"] {
@@ -1163,9 +1188,10 @@ input { color: var(--ink); }
   .tscore { font-size: 16px; }
   .helps-mini { display: none; }
 
-  /* الشبكة: مسافة أفقية مريحة بين الأعمدة */
-  .board { column-gap: var(--board-gap); row-gap: var(--board-gap); }
-  .col { gap: var(--board-gap); }
+  /* الشبكة: مسافات ضيقة + إطار زجاجي رفيع يناسب عرض الهاتف */
+  .board { column-gap: 5px; row-gap: var(--board-gap); }
+  .col { gap: var(--board-gap); padding: 4px 3px 5px; border-radius: 11px; border-width: 1px; }
+  .col-head, .col .cell { border-radius: 8px; }
   .col-head { padding: 0; }
   .col-head b { font-size: clamp(9.5px, 3vw, 11px); font-weight: 700; line-height: 1.15; }
   .col-head small { display: none; }
@@ -1233,9 +1259,10 @@ input { color: var(--ink); }
   .helps-mini { display: flex; gap: 3px; margin-top: 1px; }
   .help-dot { font-size: 7.5px; line-height: 1.5; padding: 0 3px; }
 
-  /* الشبكة: فاصل أفقي واضح بين الفئات */
-  .board { column-gap: var(--board-gap); row-gap: var(--board-gap); }
-  .col { gap: var(--board-gap); }
+  /* الشبكة: فاصل أفقي واضح بين الفئات + إطار زجاجي أنحف */
+  .board { column-gap: 7px; row-gap: var(--board-gap); --head-h: 36px; }
+  .col { gap: 3px; padding: 3px 4px 4px; border-radius: 10px; border-width: 1px; }
+  .col-head, .col .cell { border-radius: 7px; }
   .col-head { padding: 0; }
   .col-head b { font-size: 10px; line-height: 1.1; }
   .col-head small { display: none; }
