@@ -633,9 +633,9 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
 }
 /* 400: تدرّج سماوي غني */
 .cell[data-tier="400"] {
-  background: linear-gradient(180deg, #eef6fe 0%, #d8ecfb 100%);
-  border-color: #96c2e8;
-  box-shadow: 0 3px 0 #7fb1de, 0 4px 10px rgba(18, 50, 79, .06);
+  background: linear-gradient(180deg, #e3f1fd 0%, #c9e3f8 100%);
+  border-color: #84b9e4;
+  box-shadow: 0 3px 0 #6fa5d6, 0 4px 10px rgba(18, 50, 79, .07);
   color: #12324f;
 }
 /* 600: أسئلة القمة — أزرق ملكي عميق ورقم ذهبي مشرق */
@@ -678,32 +678,18 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   cursor: default;
   pointer-events: none;
   border-radius: var(--r-sm);
-  background: #eef1f5;
-  border: 1px solid #d5dce4;
+  background: #e8edf3;
+  border: 1px solid #d3dbe3;
   color: #8c96a4;
   box-shadow: none;
 }
 /* الإجابة الصحيحة: نفس رمادي «لم يجب أحد» — والتمييز الوحيد اسم الفريق بلونه */
-.cell.used.won-a,
-.cell.used.won-b {
-  background: #eef1f5;
-  border: 1px solid #d5dce4;
-  color: #8c96a4;
-  box-shadow: none;
-  opacity: .82;
-}
-.cell.used.won-a .cell-who { color: var(--team-a); }
-.cell.used.won-b .cell-who { color: var(--team-b); }
+.cell.used.won-a .cell-who { color: #1967b2; }   /* أزرق الفريق الأول — تباين 5.1:1 */
+.cell.used.won-b .cell-who { color: #a8500f; }   /* برتقالي الفريق الثاني — تباين 4.9:1 */
 .cell.used.won-a .cell-val,
 .cell.used.won-b .cell-val { color: #8c96a4; opacity: .95; }
-/* لم يجبه أحد: رمادي خافت هادئ */
-.cell.used.won-none {
-  background: #eef1f5;
-  border: 1px solid #d5dce4;
-  color: #8c96a4;
-  box-shadow: none;
-  opacity: .82;
-}
+/* لم يجبه أحد: نفس الرمادي الهادئ بلا أي تمييز */
+.cell.used.won-none { opacity: 1; }
 .cell-who {
   font-size: clamp(9px, 1.1vw, 13px);
   font-weight: 700;
@@ -1269,7 +1255,7 @@ input { color: var(--ink); }
   .col-head .dots i { width: 4px; height: 4px; }
   .cell { font-size: clamp(13px, 3.6dvh, 18px); border-radius: var(--r-sm); border-width: 1px; }
   .cell[data-tier="200"] { box-shadow: 0 2px 0 #b3d2ee; }
-  .cell[data-tier="400"] { box-shadow: 0 2px 0 #7fb1de; }
+  .cell[data-tier="400"] { box-shadow: 0 2px 0 #6fa5d6; }
   .cell[data-tier="600"] { box-shadow: 0 2px 0 #0f3150; }
   /* الخلية المجابة: سطران واضحان بلا قصّ في ارتفاع 390 */
   .cell.used { padding: 1px 3px; gap: 1px; border-radius: 6px; }

@@ -1054,6 +1054,9 @@ function selfTest() {
   ok(!!who0 && who0.textContent === state.teams[0].name, "الخلية تعرض اسم الفريق المجيب");
   ok(!!val0 && val0.textContent === String(TIERS[0]), "الخلية تعرض قيمة السؤال");
   ok(!c0.querySelector("small"), "لا يبقى عدّاد البنك داخل الخلية الملعوبة");
+  /* الصحيحة بنفس رمادي «لا أحد»، والتمييز الوحيد اسم الفريق بلونه */
+  ok(/232, 237, 243/.test(getComputedStyle(c0).backgroundColor), "خلية الإجابة الصحيحة رمادية مثل «لا أحد»");
+  ok(getComputedStyle(who0).color === "rgb(25, 103, 178)", "اسم الفريق الأول بلون فريقه");
 
   /* --- التراجع عن آخر حكم --- */
   ok(undoLastAward() === true, "التراجع عن آخر حكم متاح بعد الحكم");
@@ -1111,6 +1114,7 @@ function selfTest() {
   const who1 = cb ? cb.querySelector(".cell-who") : null;
   ok(!!cb && cb.classList.contains("won-b") && !!who1 && who1.textContent === state.teams[1].name,
     "خلية إجابة الفريق الثاني تحمل won-b وباسمه");
+  ok(getComputedStyle(cb.querySelector(".cell-who")).color === "rgb(168, 80, 15)", "اسم الفريق الثاني بلون فريقه");
   undoLastAward();
 
   /* --- لم يجب أحد: رمادي هادئ بقيمة السؤال وحدها --- */
@@ -1121,7 +1125,7 @@ function selfTest() {
   const valN = cn ? cn.querySelector(".cell-val") : null;
   ok(!!cn && cn.classList.contains("won-none") && !cn.querySelector(".cell-who"), "خلية «لا أحد» رمادية بلا اسم فريق");
   ok(!!valN && valN.textContent === String(TIERS[2]), "خلية «لا أحد» تعرض قيمة السؤال");
-  ok(!!cn && /238, 241, 245/.test(getComputedStyle(cn).backgroundColor), "خلفية «لا أحد» رمادية هادئة");
+  ok(!!cn && /232, 237, 243/.test(getComputedStyle(cn).backgroundColor), "خلفية «لا أحد» رمادية هادئة");
   ok(!!state.roundUsed[cid + ":2"] && state.roundUsed[cid + ":2"].winner === null, "roundUsed يسجل winner: null عند «لا أحد»");
   undoLastAward();
   ok(!state.roundUsed[cid + ":2"], "التراجع يمسح خلية «لا أحد»");
