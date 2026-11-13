@@ -21,7 +21,6 @@ const state = {
   played: 0,
   roundUsed: {},     // { "catId:slot": { winner: 0|1|null, value, points } } — خلايا الجولة
   active: null,      // { catId, slot, idx, q, tier, helps: [] }
-  lastSnapshot: null,
   phase: 0,
   left: 60,
   phaseMax: 60,
@@ -155,7 +154,7 @@ const sfx = {
   no: () => beep(233, .16, .04, "sawtooth"),
 };
 
-function toast(msg, ms = 2200, act = null) {
+function toast(msg, ms = 2200) {
   const t = $("toast");
   if (!t) return;
   t.innerHTML = "";
@@ -163,21 +162,7 @@ function toast(msg, ms = 2200, act = null) {
   span.textContent = msg;
   t.appendChild(span);
   clearTimeout(t._h);
-  if (act && typeof act.fn === "function") {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "toast-act";
-    b.textContent = act.label || "تراجع";
-    b.addEventListener("click", () => {
-      t.classList.remove("show");
-      clearTimeout(t._h);
-      act.fn();
-    });
-    t.appendChild(b);
-    t.classList.add("has-act");
-  } else {
-    t.classList.remove("has-act");
-  }
+  t.classList.remove("has-act");
   t.classList.add("show");
   t._h = setTimeout(() => t.classList.remove("show"), ms);
 }
@@ -193,7 +178,6 @@ function enterSite(name, opts) {
   if (clean.length < 2) { $("loginErr").textContent = "اكتب اسماً من حرفين على الأقل"; return; }
   state.user = clean;
   state.bank = loadBank(clean);
-  state.lastSnapshot = null;
   state.roundUsed = {};
   state.played = 0;
   lastScorePaint.A = null;
@@ -229,7 +213,6 @@ function tryResume() {
     });
   }
   state.roundUsed = ru;
-  state.lastSnapshot = null;
   $("teamA").value = state.teams[0].name;
   $("teamB").value = state.teams[1].name;
   $("login").classList.remove("active");
@@ -244,13 +227,11 @@ function logout() {
   try { localStorage.removeItem(K_USER); } catch (_) {}
   state.user = ""; state.bank = {};
   state.picked = []; state.roundUsed = {}; state.played = 0;
-  state.lastSnapshot = null;
   $("setup").classList.remove("active");
   $("board").classList.remove("active");
   $("login").classList.add("active");
   $("loginName").value = "";
   $("loginErr").textContent = "";
-  setUndoState();
   setTimeout(() => $("loginName").focus(), 50);
 }
 
@@ -435,11 +416,6 @@ function renderTeams() {
   if (turnEl) turnEl.textContent = state.teams[state.turn].name;
 }
 
-function setUndoState() {
-  const b = $("undoBtn");
-  if (b) b.disabled = !state.lastSnapshot;
-}
-
 function render() {
   renderBoard();
   renderTeams();
@@ -448,7 +424,6 @@ function render() {
   const el = $("remaining");
   if (el) el.textContent = `${left} سؤالاً متبقياً في بنكك`;
   renderBankInfo();
-  setUndoState();
 }
 
 /* ---------- السؤال ---------- */
@@ -576,15 +551,6 @@ function award(teamIndex) {
   if (!state.active) return;
   const { catId, slot, idx, q } = state.active;
 
-  // نسخة عميقة قبل أي تعديل — للتراجع
-  state.lastSnapshot = {
-    teams: JSON.parse(JSON.stringify(state.teams)),
-    turn: state.turn,
-    played: state.played,
-    roundUsed: JSON.parse(JSON.stringify(state.roundUsed)),
-    q: { catId, idx, wasUsedBefore: isUsed(catId, idx) },
-  };
-
   const winner = (teamIndex === 0 || teamIndex === 1) ? teamIndex : null;
   let pts = q.d;
   let msg = "لا نقاط";
@@ -610,31 +576,7 @@ function award(teamIndex) {
   render();
   saveRound();
   checkEnd();
-  setUndoState();
-  toast(msg, 7000, { label: "تراجع", fn: undoLastAward });
-}
-
-function undoLastAward() {
-  const s = state.lastSnapshot;
-  if (!s) return false;
-
-  state.teams = JSON.parse(JSON.stringify(s.teams));
-  state.teams.forEach((t) => { t.twoActive = false; });
-  state.turn = s.turn;
-  state.played = s.played;
-  state.roundUsed = JSON.parse(JSON.stringify(s.roundUsed || {}));
-
-  const { catId, idx, wasUsedBefore } = s.q;
-  if (!wasUsedBefore && state.bank[catId]) delete state.bank[catId][idx];
-  state.lastSnapshot = null;
-
-  saveBank();
-  if ($("qModal").classList.contains("open")) closeQuestion();
-  $("winModal").classList.remove("open");
-  render();
-  saveRound();
-  toast("تم التراجع عن آخر حكم", 2600);
-  return true;
+  toast(msg, 3200);
 }
 
 function closeQuestion() {
@@ -673,7 +615,6 @@ function commitScore() {
   const v = Math.min(99999, Math.max(0, Math.round(isFinite(raw) ? raw : 0)));
   state.teams[i].score = v;
   // بعد تعديل يدوي يصبح تراجع «آخر حكم» مضللاً — نلغيه بدل تصحيح مزدوج
-  state.lastSnapshot = null;
   render();
   saveRound();
   closeScoreEditor();
@@ -803,7 +744,6 @@ function startGame() {
   state.turn = 0;
   state.played = 0;
   state.roundUsed = {};
-  state.lastSnapshot = null;
   lastScorePaint.A = null;
   lastScorePaint.B = null;
   $("setup").classList.remove("active");
@@ -816,8 +756,6 @@ function backToSetup() {
   state.picked = [];
   state.roundUsed = {};
   state.played = 0;
-  state.lastSnapshot = null;
-  setUndoState();
   $("board").classList.remove("active");
   $("setup").classList.add("active");
   renderPicker();
@@ -1035,6 +973,15 @@ function selfTest() {
   const cid = state.picked[0];
   const scoreBefore = state.teams[0].score;
   const usedBefore = bankCount();
+  /* أدوات الاختبار: لقطة/استعادة — اللعبة نفسها بلا تراجع */
+  const snap = () => JSON.parse(JSON.stringify({ teams: state.teams, bank: state.bank, played: state.played, roundUsed: state.roundUsed, turn: state.turn }));
+  const restore = (s) => {
+    state.teams = s.teams; state.bank = s.bank; state.played = s.played;
+    state.roundUsed = s.roundUsed; state.turn = s.turn;
+    state.teams.forEach((t) => { t.twoActive = false; });
+    saveBank(); render(); saveRound();
+  };
+  const preA = snap();
   openQuestion(cid, 0);
   ok(!!state.active && state.active.slot === 0 && state.active.catId === cid, "فتح الخلية يحفظ slot في state.active");
   reveal();
@@ -1058,13 +1005,11 @@ function selfTest() {
   ok(/232, 237, 243/.test(getComputedStyle(c0).backgroundColor), "خلية الإجابة الصحيحة رمادية مثل «لا أحد»");
   ok(getComputedStyle(who0).color === "rgb(25, 103, 178)", "اسم الفريق الأول بلون فريقه");
 
-  /* --- التراجع عن آخر حكم --- */
-  ok(undoLastAward() === true, "التراجع عن آخر حكم متاح بعد الحكم");
-  const c0b = cellOf(cid, 0);
-  ok(state.teams[0].score === scoreBefore, "التراجع يعيد النقاط كما كانت");
-  ok(!!c0b && !c0b.classList.contains("used"), "التراجع يعيد الخلية إلى اللوحة");
-  ok(bankCount() === usedBefore, "التراجع يحذف السؤال من سجل البنك");
-  ok(!state.roundUsed[cid + ":0"], "التراجع يمسح علامة الجولة");
+  /* --- الحكم نهائي: لا ميزة تراجع --- */
+  ok(!$("undoBtn") && !document.querySelector(".toast-act"), "لا زر تراجع ولا إجراء تراجع في التوست");
+  restore(preA);
+  ok(state.teams[0].score === scoreBefore && !state.roundUsed[cid + ":0"] && bankCount() === usedBefore,
+    "استعادة حالة الاختبار تعيد اللوحة كما كانت");
 
   /* --- لا زر إغلاق: السؤال يُغلق بالحكم فقط --- */
   ok(!$("closeQBtn"), "زر إغلاق السؤال أُزيل من النافذة");
@@ -1081,6 +1026,7 @@ function selfTest() {
   $("dblA").click();
   ok(state.teams[0].dbl === false && state.teams[0].helps.dbl === true, "إلغاء الدبل قبل السؤال يعيد الوسيلة");
 
+  const preD = snap();
   $("dblA").click();
   const dblBase = state.teams[0].score;
   openQuestion(cid, 0);
@@ -1090,10 +1036,8 @@ function selfTest() {
   award(0);
   ok(state.teams[0].score === dblBase + TIERS[0] * 2, "الدبل يضاعف نقاط السؤال");
   ok(state.teams[0].dbl === false && state.teams[0].helps.dbl === false, "الدبل يُستهلك بعد الحكم");
-  undoLastAward();
-  state.teams[0].dbl = false; state.teams[0].helps.dbl = true;
-  render(); saveRound();
-  ok(state.teams[0].score === dblBase, "التراجع يعيد نقاط الدبل كما كانت");
+  restore(preD);
+  ok(state.teams[0].score === dblBase, "نقاط الدبل تعود بعد استعادة حالة الاختبار");
 
   /* --- الدبل لصاحب الدور فقط + تبديل الدور --- */
   ok(!$("dblA").classList.contains("is-off") && $("dblB").classList.contains("is-off"), "الدبل يظهر بجانب صاحب الدور فقط");
@@ -1107,6 +1051,7 @@ function selfTest() {
   ok(state.turn === 0, "زر تبديل الدور يرجع الدور للأول");
 
   /* --- الفريق الثاني: won-b --- */
+  const preB = snap();
   openQuestion(cid, 1);
   reveal();
   award(1);
@@ -1115,9 +1060,10 @@ function selfTest() {
   ok(!!cb && cb.classList.contains("won-b") && !!who1 && who1.textContent === state.teams[1].name,
     "خلية إجابة الفريق الثاني تحمل won-b وباسمه");
   ok(getComputedStyle(cb.querySelector(".cell-who")).color === "rgb(168, 80, 15)", "اسم الفريق الثاني بلون فريقه");
-  undoLastAward();
+  restore(preB);
 
   /* --- لم يجب أحد: رمادي هادئ بقيمة السؤال وحدها --- */
+  const preN = snap();
   openQuestion(cid, 2);
   reveal();
   award(null);
@@ -1127,8 +1073,8 @@ function selfTest() {
   ok(!!valN && valN.textContent === String(TIERS[2]), "خلية «لا أحد» تعرض قيمة السؤال");
   ok(!!cn && /232, 237, 243/.test(getComputedStyle(cn).backgroundColor), "خلفية «لا أحد» رمادية هادئة");
   ok(!!state.roundUsed[cid + ":2"] && state.roundUsed[cid + ":2"].winner === null, "roundUsed يسجل winner: null عند «لا أحد»");
-  undoLastAward();
-  ok(!state.roundUsed[cid + ":2"], "التراجع يمسح خلية «لا أحد»");
+  restore(preN);
+  ok(!state.roundUsed[cid + ":2"], "استعادة الحالة تمسح خلية «لا أحد»");
 
   /* --- تعديل النقاط يدوياً --- */
   const scBefore = state.teams[0].score;
@@ -1140,26 +1086,24 @@ function selfTest() {
   ok($("scoreB").textContent === "1234", "الواجهة تعرض النقاط المعدلة");
   const sr = loadRound(state.user);
   ok(!!sr && sr.teams[1].score === 1234, "تعديل النقاط يُحفظ في الجولة");
-  state.lastSnapshot = { teams: JSON.parse(JSON.stringify(state.teams)) };
-  setUndoState();
   openScoreEditor(1); $("seInput").value = "-50"; commitScore();
   ok(state.teams[1].score === 0, "النقاط لا تنزل تحت الصفر");
-  ok(state.lastSnapshot === null, "التعديل اليدوي يلغي تراجع الحكم السابق");
   state.teams[1].score = 0; render(); saveRound();
   ok(state.teams[0].score === scBefore, "تعديل فريق لا يمس فريقاً آخر");
 
   /* --- حفظ واستئناف الجولة --- */
   const r0 = loadRound(state.user);
   ok(!!r0 && r0.activeRound === true && r0.picked.length === PICK && r0.played === 0, "saveRound يحفظ الجولة عند البدء");
+  const preR = snap();
   openQuestion(cid, 0);
   reveal();
   award(1);
   const r1 = loadRound(state.user);
   ok(!!r1 && r1.played === 1 && !!r1.roundUsed[cid + ":0"] && r1.roundUsed[cid + ":0"].winner === 1
     && r1.teams[1].score === TIERS[0] && r1.turn === 1, "الحفظ يحتوي النقاط والدور والخلية الملعوبة");
-  undoLastAward();
+  restore(preR);
   const r2 = loadRound(state.user);
-  ok(!!r2 && r2.played === 0 && r2.teams[1].score === 0 && !r2.roundUsed[cid + ":0"], "التراجع يعيد حفظ الجولة كما كانت");
+  ok(!!r2 && r2.played === 0 && r2.teams[1].score === 0 && !r2.roundUsed[cid + ":0"], "استعادة الحالة تعيد حفظ الجولة كما كانت");
 
   /* --- جولة كاملة --- */
   const playAll = () => {
