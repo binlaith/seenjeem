@@ -1338,4 +1338,5 @@ input { color: var(--ink); }
 .dbl-btn.armed { background: var(--yellow); border-color: #f0c23c; color: var(--ink); box-shadow: 0 1px 0 #e8c14a; }
 .dbl-btn.spent { opacity: .35; text-decoration: line-through; cursor: default; }
 .dbl-btn:disabled { cursor: default; }
+.dbl-btn.is-off { visibility: hidden; pointer-events: none; }
 @media (max-width: 760px) { .dbl-btn { font-size: 9px; padding: 1px 6px; } }

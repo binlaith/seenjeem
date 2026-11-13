@@ -415,9 +415,12 @@ function renderTeams() {
     if (dbl) {
       const armed = !!t.dbl;
       const spent = !t.helps.dbl;
+      const off = i !== state.turn;              // يظهر فقط بجانب الفريق صاحب الدور
+      dbl.classList.toggle("is-off", off);
+      dbl.setAttribute("aria-hidden", off ? "true" : "false");
       dbl.classList.toggle("armed", armed);
       dbl.classList.toggle("spent", spent && !armed);
-      dbl.disabled = (spent && !armed) || !!state.active;
+      dbl.disabled = off || (spent && !armed) || !!state.active;
       dbl.setAttribute("aria-pressed", armed ? "true" : "false");
       dbl.textContent = armed ? "دبل ×2" : "دبل";
       dbl.title = armed
@@ -425,6 +428,8 @@ function renderTeams() {
         : spent ? "استُخدم دبل هذا الفريق" : "مضاعفة نقاط السؤال القادم";
     }
   });
+  const sw = $("swapTurnBtn");
+  if (sw) sw.disabled = !!state.active;
   /* السطر العلوي القديم للدور أُزيل — البطاقة المتوهجة تكفي */
   const turnEl = $("turnTeam");
   if (turnEl) turnEl.textContent = state.teams[state.turn].name;
@@ -675,10 +680,23 @@ function commitScore() {
   toast(`صارت نقاط ${state.teams[i].name} ${v}`, 2600);
 }
 
+/* ---------- تبديل الدور يدوياً ---------- */
+function swapTurn() {
+  if (state.active) return;
+  // أي دبل معلّق يُلغى وتُرجَع الوسيلة قبل تغيير الدور
+  state.teams.forEach((t) => { if (t.dbl) { t.dbl = false; t.helps.dbl = true; } });
+  state.turn = 1 - state.turn;
+  beep(560, .06);
+  render();
+  saveRound();
+  toast(`الدور الآن لـ${state.teams[state.turn].name}`);
+}
+
 /* ---------- الدبل: يُفعّل قبل السؤال من الشريط ---------- */
 function toggleDbl(i) {
   const t = state.teams[i];
   if (!t) return;
+  if (i !== state.turn) { toast("الدبل متاح للفريق صاحب الدور فقط"); return; }
   if (state.active) { toast("الدبل يُفعّل قبل فتح السؤال"); return; }
   if (t.dbl) {
     t.dbl = false; t.helps.dbl = true;
@@ -911,6 +929,7 @@ function bind() {
 
   // زر المنزل في منتصف الشريط: عودة لاختيار الفئات (بسؤال إن بدأت الجولة)
   on("homeBtn", "click", goHome);
+  on("swapTurnBtn", "click", swapTurn);
 
   // تعديل النقاط: اضغط رقم الفريق
   [["A", 0], ["B", 1]].forEach(([L, i]) => {
@@ -1072,6 +1091,17 @@ function selfTest() {
   state.teams[0].dbl = false; state.teams[0].helps.dbl = true;
   render(); saveRound();
   ok(state.teams[0].score === dblBase, "التراجع يعيد نقاط الدبل كما كانت");
+
+  /* --- الدبل لصاحب الدور فقط + تبديل الدور --- */
+  ok(!$("dblA").classList.contains("is-off") && $("dblB").classList.contains("is-off"), "الدبل يظهر بجانب صاحب الدور فقط");
+  $("dblA").click();
+  ok(state.teams[0].dbl === true, "الدبل يُفعّل لصاحب الدور");
+  $("swapTurnBtn").click();
+  ok(state.turn === 1, "زر تبديل الدور ينقل الدور للفريق الثاني");
+  ok($("dblA").classList.contains("is-off") && !$("dblB").classList.contains("is-off"), "زر الدبل ينتقل مع الدور");
+  ok(state.teams[0].dbl === false && state.teams[0].helps.dbl === true, "تبديل الدور يلغي الدبل المعلّق ويعيد الوسيلة");
+  $("swapTurnBtn").click();
+  ok(state.turn === 0, "زر تبديل الدور يرجع الدور للأول");
 
   /* --- الفريق الثاني: won-b --- */
   openQuestion(cid, 1);
