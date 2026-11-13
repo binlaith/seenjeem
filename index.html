@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="styles.css?v=92" />
+<link rel="stylesheet" href="styles.css?v=94" />
 </head>
 <body>
 
@@ -21,23 +21,17 @@
   <div class="login-wrap">
     <img class="brand-logo" src="assets/icon.svg" alt="سين جيم تيمو" width="76" height="76" />
     <h1>سين جيم تيمو</h1>
-    <p class="sub">اكتب اسمك، والباسورد غير مطلوب</p>
 
     <div class="login-card">
       <label class="field" for="loginName">
         <span>اسم اللاعب</span>
-        <input id="loginName" maxlength="18" placeholder="مثال: أحمد" autocomplete="off" />
+        <input id="loginName" maxlength="18" autocomplete="off" />
       </label>
       <button id="loginBtn" class="btn">ادخل</button>
-      <p class="login-note">نحفظ أسئلتك باسمك، فلا يعود إليك سؤال أجبت عنه سابقاً.</p>
+      <p class="login-note">*ملاحظة: اختار اسم مميز واحفظه حتى لا تتكرر الأسئلة عند دخولك للعبة مرة أخرى.</p>
       <p class="login-err" id="loginErr"></p>
     </div>
 
-    <ul class="login-badges" aria-label="عن اللعبة">
-      <li>20 فئة متنوعة</li>
-      <li>6,000 سؤال متجدد</li>
-      <li>للجمعات والعائلة</li>
-    </ul>
   </div>
 </section>
 
@@ -243,7 +237,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="questions.js?v=92"></script>
-<script src="app.js?v=92"></script>
+<script src="questions.js?v=94"></script>
+<script src="app.js?v=94"></script>
 </body>
 </html>

@@ -1367,3 +1367,13 @@ input { color: var(--ink); }
 .dbl-btn:disabled { cursor: default; }
 .dbl-btn.is-off { visibility: hidden; pointer-events: none; }
 @media (max-width: 760px) { .dbl-btn { font-size: 9px; padding: 1px 6px; } }
+
+/* شاشة الدخول في الجوال بالعرض: تبقى كلها داخل الشاشة */
+@media (max-height: 500px) and (orientation: landscape) {
+  #login { padding-top: 8px; padding-bottom: 6px; }
+  #login .brand-logo { width: 50px; height: 50px; }
+  #login h1 { font-size: var(--t-2xl); margin: 2px 0 0; }
+  #login .login-card { margin-top: var(--s3); padding: 16px 18px 14px; }
+  #login .login-card .btn { margin-top: var(--s3); }
+  #login .login-note { margin-top: var(--s2); font-size: 12px; line-height: 1.55; }
+}
