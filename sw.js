@@ -1,15 +1,24 @@
-/* سين جيم — Service Worker
+/* سين جيم تيمو — Service Worker
    الملفات الأساسية: Network-First (التحديث يصل فوراً، والكاش بديل عند انقطاع الإنترنت)
-   الشعارات: Cache-First بعد أول طلب. */
+   الهوية ورسومات الفئات والشعارات والأعلام: Cache-First بعد أول طلب. */
 
-const VERSION = "seenjeem-v42";
+const VERSION = "seenjeem-v60";
+
+/* رسومات الفئات — تُخزّن مسبقاً حتى تظهر شاشة الاختيار كاملة دون إنترنت */
+const CAT_IDS = [
+  "logos", "flags", "quran", "prophets", "deen", "kuwait", "animals",
+  "history", "geo", "football", "general", "science", "literature", "arts",
+];
+
 const CORE = [
   "./",
   "./index.html",
-  "./styles.css?v=42",
-  "./app.js?v=42",
-  "./questions.js?v=42",
+  "./styles.css?v=60",
+  "./app.js?v=60",
+  "./questions.js?v=60",
   "./manifest.json",
+  "./assets/icon.svg",
+  ...CAT_IDS.map((id) => `./assets/cats/${id}.svg`),
 ];
 
 self.addEventListener("install", (event) => {
@@ -32,8 +41,11 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-function isLogo(url) {
-  return url.pathname.indexOf("/assets/logos/") !== -1;
+function isAsset(url) {
+  return url.pathname.indexOf("/assets/logos/") !== -1
+    || url.pathname.indexOf("/assets/flags/") !== -1
+    || url.pathname.indexOf("/assets/cats/") !== -1
+    || url.pathname.indexOf("/assets/icon.svg") !== -1;
 }
 
 async function networkFirst(request) {
@@ -72,6 +84,6 @@ self.addEventListener("fetch", (event) => {
   try { url = new URL(request.url); } catch (_) { return; }
   if (url.origin !== self.location.origin) return;
 
-  if (isLogo(url)) { event.respondWith(cacheFirst(request)); return; }
+  if (isAsset(url)) { event.respondWith(cacheFirst(request)); return; }
   event.respondWith(networkFirst(request));
 });

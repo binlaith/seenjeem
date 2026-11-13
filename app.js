@@ -239,7 +239,8 @@ function renderPicker() {
     const b = document.createElement("button");
     b.className = "cat-card" + (state.picked.includes(cat.id) ? " on" : "");
     b.disabled = left === 0;
-    b.innerHTML = `<b>${esc(cat.name)}</b><small>${left === 0 ? "انتهت أسئلتها" : `متبقي ${left} سؤالاً`}</small>`;
+    b.dataset.cat = cat.id;
+    b.innerHTML = `<div class="cat-visual"><img src="assets/cats/${cat.id}.svg" alt="" loading="lazy" /></div><div class="cat-meta"><b>${esc(cat.name)}</b><small>${left === 0 ? "انتهت أسئلتها" : `متبقي ${left} سؤالاً`}</small></div>`;
     if (left > 0) b.addEventListener("click", () => toggleCat(cat.id));
     grid.appendChild(b);
   });
@@ -388,8 +389,12 @@ function openQuestion(catId, slot) {
   $("qCat").textContent = cat.name;
   $("qValue").textContent = tier + " نقطة";
   $("qText").textContent = pickOne.q.q;
-  if (pickOne.q.img) { $("qImg").src = pickOne.q.img; $("qImg").hidden = false; }
-  else { $("qImg").hidden = true; $("qImg").removeAttribute("src"); }
+  if (pickOne.q.img) {
+    $("qImg").src = pickOne.q.img;
+    $("qImg").hidden = false;
+    $("qImg").classList.toggle("is-flag", pickOne.q.img.includes("flags/"));
+  }
+  else { $("qImg").hidden = true; $("qImg").classList.remove("is-flag"); $("qImg").removeAttribute("src"); }
 
   $("answerBox").hidden = true;
   $("answerText").textContent = pickOne.q.a;
@@ -818,7 +823,8 @@ function selfTest() {
   try { localStorage.clear(); } catch (_) {}
 
   enterSite("مختبر");
-  ok(document.querySelectorAll("#catGrid .cat-card").length === 10, "10 فئات في الاختيار");
+  ok(document.querySelectorAll("#catGrid .cat-card").length === CATEGORIES.length
+    && CATEGORIES.length >= 10, `بطاقات الفئات تطابق CATEGORIES (${CATEGORIES.length}) في الاختيار`);
 
   state.picked = CATEGORIES.slice(0, 6).map((c) => c.id);
   startGame();
@@ -898,11 +904,12 @@ function selfTest() {
   ok(banked === 72, `البنك يحفظ 72 سؤالاً لهذا الاسم (${banked})`);
 
   // نفاد بنك فئة يقفلها في شاشة الاختيار
-  state.bank["deen"] = {};
-  catById("deen").questions.forEach((_, i) => { state.bank["deen"][i] = true; });
+  const drainId = CATEGORIES.some((c) => c.id === "deen") ? "deen" : CATEGORIES[0].id;
+  state.bank[drainId] = {};
+  catById(drainId).questions.forEach((_, i) => { state.bank[drainId][i] = true; });
   renderPicker();
-  const deenCard = document.querySelectorAll("#catGrid .cat-card")[1];
-  ok(deenCard && deenCard.disabled, "الفئة تُقفل بعد نفاد بنكها كاملاً");
+  const drainedCard = document.querySelector(`#catGrid .cat-card[data-cat="${drainId}"]`);
+  ok(drainedCard && drainedCard.disabled, "الفئة تُقفل بعد نفاد بنكها كاملاً");
 
   $("winModal").classList.remove("open");
   clearRound(state.user);

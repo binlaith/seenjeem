@@ -105,21 +105,41 @@ button { font-family: inherit; cursor: pointer; color: inherit; }
 #setup {
   overflow-y: auto;
   align-items: center;
-  padding: var(--s7) var(--s5);
+  padding: var(--s4) var(--s5);
   background: var(--blue-50);
 }
 
+/* شاشة الاختيار: هوامش مضغوطة حتى لا يهرب زر «ابدأ اللعبة» أسفل الشاشة */
+#setup .brand-logo { width: 52px; height: 52px; margin-bottom: var(--s2); }
+#setup .team-row { margin: var(--s3) 0; }
+#setup .bank-card { margin: var(--s2) auto 0; }
+#setup .pick-head { margin-bottom: var(--s2); }
+#setup .setup-actions { margin-top: var(--s3); }
+
 .setup-wrap { width: min(880px, 100%); text-align: center; }
 
-.mark {
-  width: 64px; height: 64px;
-  margin: 0 auto var(--s5);
-  background: var(--yellow);
-  border-radius: 18px;
-  display: grid; place-items: center;
-  font-weight: 900; font-size: 24px;
+/* شاشات الكمبيوتر العريضة: 14 فئة في صفين متساويين 7×2 مع زر «ابدأ اللعبة» في نفس الشاشة */
+@media (min-width: 980px) {
+  #setup .setup-wrap { width: min(1080px, 100%); }
+  #setup .cat-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; }
+  #setup .cat-card { padding: 5px 5px var(--s2); }
+  #setup .cat-card b { font-size: var(--t-sm); }
+  #setup .cat-card small { font-size: 10px; }
+}
+
+/* أيقونة الهوية (assets/icon.svg) — مربعة نظيفة بلا أي نص صغير داخلها */
+.brand-logo {
+  display: block;
+  width: 76px;
+  height: 76px;
+  margin: 0 auto var(--s3);
+}
+
+/* اسم الموقع تحت الأيقونة — هو النص الوحيد الظاهر (لا تكرار) */
+.brand-logo + h1 {
+  font-size: clamp(26px, 3.8vw, 34px);
+  letter-spacing: -.3px;
   color: var(--ink);
-  letter-spacing: -1px;
 }
 
 h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing: -.5px; }
@@ -154,34 +174,76 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
 
 .cat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: var(--s3);
 }
 
 .cat-card {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   text-align: right;
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--r);
-  padding: var(--s3) var(--s4);
+  padding: 6px 6px var(--s3);
   color: var(--ink);
-  transition: border-color .12s, background .12s;
+  transition: border-color .12s, background .12s, box-shadow .12s, transform .12s;
 }
-.cat-card:hover { border-color: var(--blue-300); }
-.cat-card b { display: block; font-size: var(--t-base); font-weight: 700; }
-.cat-card small { color: var(--muted); font-size: var(--t-xs); }
-.cat-card.on { background: var(--blue-100); border-color: var(--blue-500); }
+.cat-card:hover:not(:disabled) { border-color: var(--blue-300); transform: translateY(-1px); }
+.cat-card:disabled { opacity: .55; }
+
+/* صورة الفئة — تُعرض في شاشة الاختيار فقط (ولا تدخل لوحة اللعب أبداً) */
+.cat-visual {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 120 / 76;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: var(--blue-50);
+  box-shadow: inset 0 0 0 1px rgba(31, 95, 150, .10);
+}
+.cat-visual img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cat-meta { display: flex; flex-direction: column; gap: 1px; padding: 0 4px; min-width: 0; }
+.cat-card b {
+  display: block;
+  font-size: var(--t-base); font-weight: 700; line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cat-card small {
+  color: var(--muted); font-size: var(--t-xs);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cat-card.on {
+  background: var(--blue-100);
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 2px var(--blue-200);
+}
+.cat-card.on .cat-visual { box-shadow: inset 0 0 0 2px var(--blue-500); }
 .cat-card.on::after {
   content: "";
-  position: absolute; inset-inline-start: var(--s3); top: 50%;
-  width: 10px; height: 10px; margin-top: -5px;
+  position: absolute; inset-inline-start: 12px; top: 12px;
+  width: 16px; height: 16px;
   background: var(--yellow);
   border: 2px solid var(--blue-700);
   border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(18, 50, 79, .3);
+  z-index: 2;
 }
 
 .setup-actions { display: flex; align-items: center; justify-content: center; gap: var(--s3); margin-top: var(--s6); }
+
+/* 14 فئة على الجوال: عمودان مريحان بحشوة متزنة (بورتريه، أو أي شاشة ضيقة) */
+@media (max-width: 760px) and (orientation: portrait), (max-width: 560px) {
+  #setup { padding: var(--s6) var(--s4); }
+  .cat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s2); }
+  .cat-card { padding: 5px 5px var(--s2); border-radius: var(--r-sm); }
+  .cat-meta { padding: 0 3px; }
+  .cat-card b { font-size: var(--t-sm); }
+  .cat-card small { font-size: 10px; }
+  .cat-card.on::after { inset-inline-start: 9px; top: 9px; width: 14px; height: 14px; }
+}
 
 /* ---------- اللوحة ---------- */
 /* v42: اللوحة تملأ الشاشة — لا سكرول عمودي ولا أفقي على أي مقاس */
@@ -204,7 +266,13 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   min-width: 0;
   flex: 0 0 auto;
 }
-.bar-brand { font-weight: 700; font-size: var(--t-xs); letter-spacing: .08em; color: var(--muted); white-space: nowrap; }
+.bar-brand {
+  display: flex; align-items: center; gap: 6px;
+  font-weight: 700; font-size: var(--t-xs);
+  letter-spacing: .04em; color: var(--muted);
+  white-space: nowrap; min-width: 0;
+}
+.bar-logo { width: 22px; height: 22px; flex: 0 0 auto; border-radius: 6px; display: block; }
 
 .scoreline { display: flex; align-items: center; gap: var(--s5); min-width: 0; }
 .team { display: flex; align-items: baseline; gap: var(--s2); }
@@ -346,6 +414,14 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
 
 .q-body { text-align: center; padding: var(--s6) var(--s1) var(--s5); }
 .q-img { max-height: 180px; max-width: 60%; margin: 0 auto var(--s5); display: block; }
+/* صور الأعلام: إطار رفيع يوضّح الأعلام ذات الخلفية البيضاء على بطاقة السؤال البيضاء */
+.q-img.is-flag {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  max-height: 170px;
+  width: auto;
+}
 .q-text {
   font-size: clamp(22px, 2.6vw, var(--t-2xl));
   font-weight: 700;
@@ -387,6 +463,8 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
   display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s2);
   margin-top: var(--s5); padding-top: var(--s4); border-top: 1px solid var(--line);
 }
+/* بعد كشف الإجابة يفرغ #helpBox — فلا يبقى خطه العلوي ظاهراً كخط معزول */
+.helps:empty { display: none; }
 .help {
   background: var(--blue-100);
   border: 1px solid var(--blue-200);
@@ -427,7 +505,13 @@ h1 { font-size: clamp(32px, 5vw, var(--t-3xl)); font-weight: 900; letter-spacing
 /* ---------- موبايل ---------- */
 @media (max-width: 820px) {
   .team-row { grid-template-columns: 1fr; }
-  .setup-actions { flex-direction: column-reverse; gap: var(--s1); padding-bottom: var(--s5); }
+  /* زر «ابدأ اللعبة» يبقى أمام اللاعب لاصقاً أسفل الشاشة أثناء تصفح الفئات */
+  .setup-actions {
+    position: sticky; bottom: 0; z-index: 5;
+    flex-direction: column-reverse; gap: var(--s1);
+    background: linear-gradient(to top, var(--blue-50) 80%, transparent);
+    padding: 10px 0 8px;
+  }
   .modal-card { padding: var(--s4); }
   .helps { grid-template-columns: 1fr 1fr 1fr; }
   .help { font-size: 11px; }
@@ -628,7 +712,9 @@ input { color: var(--ink); }
 
   /* الشريط العلوي: سطر واحد أنيق */
   .bar { flex-wrap: nowrap; gap: 6px; padding-bottom: 6px; }
-  .bar-brand { display: none; }
+  /* الشعار المصغّر يبقى في الشريط بلا زيادة ارتفاع ولا سكرول */
+  .bar-brand { display: flex; gap: 5px; font-size: 10px; letter-spacing: 0; }
+  .bar-brand span { max-width: 78px; overflow: hidden; text-overflow: ellipsis; }
   .bar-right { gap: 4px; flex: 0 0 auto; }
   .icon { width: 32px; height: 32px; border-radius: 9px; }
   .icon svg { width: 15px; height: 15px; }
@@ -678,6 +764,11 @@ input { color: var(--ink); }
   #qModal .btn-team { padding: 10px 6px; }
 }
 
+/* هواتف ضيقة جداً (≤430px): أيقونة الشعار وحدها تكفي في الشريط */
+@media (max-width: 430px) {
+  .bar-brand span { display: none; }
+}
+
 /* ---------- الجوال بالعرض (الارتفاع ثمين جداً) ---------- */
 @media (max-height: 540px) and (orientation: landscape) {
   #board {
@@ -688,7 +779,8 @@ input { color: var(--ink); }
 
   /* الشريط العلوي: سطر واحد مضغوط جداً */
   .bar { flex-wrap: nowrap; gap: 8px; padding-bottom: 4px; }
-  .bar-brand { display: none; }
+  .bar-brand { display: flex; gap: 5px; font-size: 10px; letter-spacing: 0; }
+  .bar-brand span { max-width: 84px; overflow: hidden; text-overflow: ellipsis; }
   .bar-right { gap: 4px; flex: 0 0 auto; }
   .icon { width: 28px; height: 28px; border-radius: 8px; }
   .icon svg { width: 14px; height: 14px; }
@@ -727,6 +819,8 @@ input { color: var(--ink); }
   #qModal .modal-card { padding: 10px 14px; max-height: 96dvh; }
   #qModal .q-body { padding: 8px 2px; }
   #qModal .q-img { max-height: 90px; margin-bottom: var(--s2); }
+  /* الأعلام تحتفظ بإطارها لكن بارتفاع أقصر ليظل المودال مريحاً بالعرض */
+  #qModal .q-img.is-flag { max-height: 88px; }
   #qModal .q-text { font-size: clamp(16px, 4.4dvh, 22px); line-height: 1.55; }
   #qModal .phase { margin-top: 6px; }
   #qModal .clock { font-size: 20px; }
