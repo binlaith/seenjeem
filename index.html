@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="styles.css?v=60" />
+<link rel="stylesheet" href="styles.css?v=72" />
 </head>
 <body>
 
@@ -65,6 +65,7 @@
       <span>اختر 6 فئات</span>
       <span class="count" id="pickCount">0 / 6</span>
     </div>
+    <div class="cat-tabs" id="catTabs"><button class="cat-tab on" data-filter="all">الكل (20)</button><button class="cat-tab" data-filter="general">الفئات العامة (14)</button><button class="cat-tab" data-filter="kids">الأطفال 7–12 (6)</button></div>
     <div class="cat-grid" id="catGrid"></div>
 
     <div class="setup-actions">
@@ -174,15 +175,15 @@
   <div class="modal-card narrow">
     <div class="q-top"><span class="q-cat">كيف تُلعب؟</span><button class="icon icon-sm" id="closeRules" aria-label="إغلاق">✕</button></div>
     <ol class="rules">
-      <li>اختر <b>6 فئات من 14</b>، ثم يبدأ الفريقان بالتناوب على اختيار الفئة وقيمة السؤال.</li>
-      <li>بنك اللعبة <b>200 سؤال لكل فئة = 2800 سؤال</b> إجمالاً، موزعة بدقة حسب الصعوبة.</li>
+      <li>اختر <b>6 فئات من 20</b> — منها <b>6 فئات للأطفال 7–12 سنة</b> — ثم يبدأ الفريقان بالتناوب على اختيار الفئة وقيمة السؤال.</li>
+      <li>بنك اللعبة <b>20 فئة × 300 سؤال = 6000 سؤال</b> إجمالاً، موزعة بدقة حسب الصعوبة.</li>
       <li>درجات الصعوبة: <b>200 متوسط</b> · <b>400 صعب</b> · <b>600 صعب جداً</b>.</li>
       <li>الجولة الواحدة: <b>6 فئات × 6 أسئلة = 36 سؤالاً</b>. لا يتكرر سؤال للاعب الواحد، وكل سؤال يُحفظ في بنكه باسمه.</li>
       <li>عند فتح السؤال يبدأ وقت الفريق صاحب الدور: <b>دقيقة واحدة</b>.</li>
       <li>إذا لم يجب، تنتقل الفرصة للفريق الآخر: <b>30 ثانية فقط</b>.</li>
       <li>بعد «اكشف الإجابة» يختار المقدّم الفريق الذي أجاب صحيحاً، وينتقل الدور دائماً للفريق الآخر.</li>
       <li>لكل فريق ثلاث وسائل، مرة واحدة لكل واحدة: اتصال بصديق (+دقيقة) · جاوب جوابين · دبل نقاط.</li>
-      <li>إذا نفدت أسئلة فئة كاملة (200 سؤال) تُغلق الفئة في شاشة الاختيار.</li>
+      <li>إذا نفدت أسئلة فئة كاملة (300 سؤال) تُغلق الفئة في شاشة الاختيار.</li>
     </ol>
   </div>
 </div>
@@ -233,7 +234,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="questions.js?v=65"></script>
-<script src="app.js?v=65"></script>
+<script src="questions.js?v=72"></script>
+<script src="app.js?v=72"></script>
 </body>
 </html>

@@ -12,6 +12,7 @@ const state = {
   user: "",
   bank: {},          // { catId: { "3": true, ... } } — أسئلة استخدمها هذا اللاعب
   picked: [],
+  catFilter: "all",  // تصفية بطاقات الاختيار: all | general | kids
   teams: [
     { name: "فريق سين", score: 0, helps: { friend: true, two: true, dbl: true }, dbl: false, twoActive: false },
     { name: "فريق جيم", score: 0, helps: { friend: true, two: true, dbl: true }, dbl: false, twoActive: false },
@@ -234,15 +235,23 @@ function renderPicker() {
   const grid = $("catGrid");
   if (!grid) return;
   grid.innerHTML = "";
-  CATEGORIES.forEach((cat) => {
+  const isKids = (cat) => cat.audience === "kids";
+  CATEGORIES.filter((cat) => state.catFilter === "all"
+    || (state.catFilter === "kids" ? isKids(cat) : !isKids(cat))).forEach((cat) => {
     const left = catLeft(cat.id);
     const b = document.createElement("button");
     b.className = "cat-card" + (state.picked.includes(cat.id) ? " on" : "");
     b.disabled = left === 0;
     b.dataset.cat = cat.id;
-    b.innerHTML = `<div class="cat-visual"><img src="assets/cats/${cat.id}.svg" alt="" loading="lazy" /></div><div class="cat-meta"><b>${esc(cat.name)}</b><small>${left === 0 ? "انتهت أسئلتها" : `متبقي ${left} سؤالاً`}</small></div>`;
+    b.dataset.audience = isKids(cat) ? "kids" : "general";
+    b.innerHTML = `<div class="cat-visual"><img src="assets/cats/${cat.id}.svg" alt="" loading="lazy" /></div>`
+      + (isKids(cat) ? `<span class="kids-pill">7–12</span>` : "")
+      + `<div class="cat-meta"><b>${esc(cat.name)}</b><small>${left === 0 ? "انتهت أسئلتها" : `متبقي ${left} سؤالاً`}</small></div>`;
     if (left > 0) b.addEventListener("click", () => toggleCat(cat.id));
     grid.appendChild(b);
+  });
+  document.querySelectorAll("#catTabs .cat-tab").forEach((t) => {
+    t.classList.toggle("on", (t.dataset.filter || "all") === state.catFilter);
   });
   $("pickCount").innerHTML = `<span dir="ltr">${state.picked.length}/${PICK}</span>`;
   $("startBtn").disabled = state.picked.length !== PICK;
@@ -778,6 +787,12 @@ function bind() {
   $("switchUser").addEventListener("click", logout);
 
   $("startBtn").addEventListener("click", () => { beep(600, .08); startGame(); });
+  document.querySelectorAll("#catTabs .cat-tab").forEach((t) => {
+    t.addEventListener("click", () => {
+      state.catFilter = t.dataset.filter || "all";
+      renderPicker();
+    });
+  });
   $("rulesBtn").addEventListener("click", () => $("rulesModal").classList.add("open"));
   $("closeRules").addEventListener("click", () => $("rulesModal").classList.remove("open"));
   $("revealBtn").addEventListener("click", reveal);
